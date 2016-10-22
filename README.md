@@ -1,6 +1,6 @@
 # ekezetesites
 
-##The first and most important: Collect data
+##0. The first and most important: Collect data
 
 Collected Information from:
 - Webcorpus (600M words)
