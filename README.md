@@ -3,7 +3,7 @@
 ##0. The first and most important: Collect data
 
 Collected Information from:
-- Webcorpus (600M words)
+- Webcorpus (6000M words)
 - 1 Million Facebook comments
 - Books (P. Howard, JK Rowling, Tolkien, and freely available papers), all in hungarian
 
