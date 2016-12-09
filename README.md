@@ -17,6 +17,6 @@ The TSV can be found on this URL:
 
 https://docs.google.com/spreadsheets/d/1Vgq3kxOWubbTrgRzCU5wDivZgYdvcTJkShn_jOtUsII/edit?usp=sharing
 
-##2. Reaccentize using tesnorflow
+##2. Reaccentize using tensorflow
 
 
