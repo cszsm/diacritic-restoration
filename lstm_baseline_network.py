@@ -8,18 +8,17 @@ from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
 import logger
-import os
 
 
 class Network:
 
-    def __init__(self):
+    def __init__(self, logger):
 
-        self.units = random.randrange(10, 1000, 10)
+        self.units = random.randrange(10, 100, 10)
 
         print(str(self.units) + 'units')
         # self.logger = logger.Logger('/logs/' + str(self.units) + 'units')
-        self.logger = logger.Logger(os.path.join(os.path.dirname('logs'), str(self.units) + 'units'))
+        self.logger = logger
 
         self.model = Sequential()
         self.model.add(LSTM(self.units, return_sequences=False, input_shape=(3, 30)))
@@ -32,15 +31,19 @@ class Network:
     def run(self, train_x, test_x, train_y, test_y):
 
         print('units: ' + str(self.units))
-        self.logger.log('units: ' + str(self.units))
+        self.logger.log('\nunits: ' + str(self.units))
 
         early_stopping = EarlyStopping(monitor='loss', patience=0)
         self.model.fit(train_x, train_y, batch_size=32, epochs=100, callbacks=[early_stopping], verbose=3)
         score = self.model.evaluate(test_x, test_y, batch_size=32)
 
         print('\nscore:')
+        print(self.model.metrics_names)
         print(score)
-        self.logger.log('\nscore:')
+        self.logger.log('\nloss: ')
+        self.logger.log(str(score[0]))
+        self.logger.log('\naccuracy: ')
+        self.logger.log(str(score[1]))
         # for line in score:
         #     self.logger.log(line)
 
