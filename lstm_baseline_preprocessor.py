@@ -82,10 +82,9 @@ def normalize_text(text):
 
 
 def fit_encoders():
-    # windows = []
     alphabet = "abcdefghijklmnopqrstuvwxyz 0_*"
     alphabet_list = list(alphabet)
-#     print(alphabet_list)
+    
     LABEL_ENC.fit(alphabet_list)
     label_list = LABEL_ENC.transform(alphabet_list)
     ONEHOT_ENC.fit(label_list.reshape(-1, 1))
@@ -101,7 +100,6 @@ def transform_list(character_list):
 
     for character in character_list:
         transformed_character = transform(character)
-#         transformed_list.append(list(transformed_character))
         transformed_list.append(transformed_character)
 
     return transformed_list
@@ -142,7 +140,6 @@ def make_windows_from_word(word, window_size, vowel):
 
         if (sliding_window[window_size] == vowel) \
                 or (sliding_window[window_size] in VOWEL_TABLE[vowel]):
-            # normalized_list = normalize_list(list(sliding_window))
             normalized_list = list(deaccentize_list(list(sliding_window)))
             transformed_list = transform_list(normalized_list)
             transformed_accents = sliding_window[window_size]
@@ -160,14 +157,10 @@ def make_windows_from_text(text, window_size, vowel):
     for word in text:
         normalized_word = normalize_text(word)
         padded_word = pad_word(normalized_word.lower(), window_size)
-#         print(padded_word)
 
         new_windows, new_accents = make_windows_from_word(
             padded_word, window_size, vowel)
-#         print(new_windows)
-#         print(np.array(new_windows).argmax(axis=2))
-#         windows.append(new_windows)
-#         accents.append(new_accents)
+
         windows += new_windows
         accents += new_accents
 
@@ -176,10 +169,3 @@ def make_windows_from_text(text, window_size, vowel):
 def make_windows(text, window_size, vowel):
     fit_encoders()
     return make_windows_from_text(text, window_size, vowel)
-
-# fit_encoders()
-
-# x1, y1 = make_windows(['áradat'], 1, 'a')
-
-# print(np.array(x1).argmax(axis=2))
-# print(y1)

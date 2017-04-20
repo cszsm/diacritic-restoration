@@ -12,17 +12,24 @@ import logger
 
 class Network:
 
-    def __init__(self, logger):
+    vowel = ''
 
-        self.units = random.randrange(10, 100, 10)
+    def __init__(self, params, vowel, logger):
+
+        self.vowel = vowel
+        self.units = params['units']
 
         print(str(self.units) + 'units')
-        # self.logger = logger.Logger('/logs/' + str(self.units) + 'units')
         self.logger = logger
 
         self.model = Sequential()
         self.model.add(LSTM(self.units, return_sequences=False, input_shape=(3, 30)))
-        self.model.add(Dense(2, activation='sigmoid'))
+
+        output_length = 2
+        if self.vowel in ['o', 'u']:
+            output_length = 4
+
+        self.model.add(Dense(output_length, activation='sigmoid'))
 
         self.model.compile(loss='binary_crossentropy',
                       optimizer='rmsprop',
@@ -30,8 +37,8 @@ class Network:
 
     def run(self, train_x, test_x, train_y, test_y):
 
-        print('units: ' + str(self.units))
-        self.logger.log('\nunits: ' + str(self.units))
+        print('vowel: ' + self.vowel)
+        self.logger.log('\nvowel: ' + self.vowel)
 
         early_stopping = EarlyStopping(monitor='loss', patience=0)
         self.model.fit(train_x, train_y, batch_size=32, epochs=100, callbacks=[early_stopping], verbose=3)
@@ -44,9 +51,13 @@ class Network:
         self.logger.log(str(score[0]))
         self.logger.log('\naccuracy: ')
         self.logger.log(str(score[1]))
-        # for line in score:
-        #     self.logger.log(line)
 
 
     def get_model(self):
         return self.model
+
+    @staticmethod
+    def get_random_parameters():
+        params = {}
+        params['units'] = random.randrange(10, 1000, 10)
+        return params

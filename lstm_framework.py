@@ -7,45 +7,64 @@ import lstm_baseline_preprocessor as preprocessor
 import logger
 import datetime
 import os.path
+import argparse
+
+LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
 
 class Framework:
 
-    CURRENT_VOWEL = 'a'
+    train_x = {}
+    train_y = {}
+    test_x = {}
+    test_y = {}
 
-    def run(self, train_x, test_x, train_y, test_y):
-        net = network.Network(self.logger)
+    def run_network(self, params, vowel):
+        net = network.Network(params, vowel, self.logger)
 
-        net.run(train_x, test_x, train_y, test_y)
+        net.run(self.train_x[vowel], self.test_x[vowel], self.train_y[vowel], self.test_y[vowel])
 
         model = net.get_model()
 
-        x, y = preprocessor.make_windows(["áradat"], 1, 'a')
+        # x, y = preprocessor.make_windows(["tevékenység"], 1, self.CURRENT_VOWEL)
         # print(x)
         # print(y)
-        print(model.predict(x))
+        # print(model.predict(x))
         
-    def run_more(self, count):
-        prepared_data = np.load("prepared_" + self.CURRENT_VOWEL + ".npz")
+    def run(self, count):
+        self.load_prepared_data()
 
         filename = self.create_filename()
         self.logger = logger.Logger(os.path.join('logs', filename))
 
-        train_x, test_x, train_y, test_y = train_test_split(prepared_data["x"], prepared_data["y"], test_size=0.2)
-
         for i in range(count):
-            self.run(train_x, test_x, train_y, test_y)
+            params = network.Network.get_random_parameters()
+            self.logger.log('\n\nunits: ' + str(params['units']))
+            for vowel in LATIN_VOWELS:
+                self.run_network(params, vowel)
 
     def create_filename(self):
         date = str(datetime.datetime.today().date())
         filename = date
 
         i = 1
-        while(os.path.isfile(filename)):
+        while(os.path.isfile(os.path.join('logs', filename))):
             filename = date + "-" + str(i)
             i += 1
             print(filename)
 
         return filename
 
+    def load_prepared_data(self):
+        for vowel in LATIN_VOWELS:
+            prepared_data = np.load("prepared_" + vowel + ".npz")
+            self.train_x[vowel], self.test_x[vowel], self.train_y[vowel], self.test_y[vowel] = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.2)
 
-Framework().run_more(4)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("count")
+
+args = parser.parse_args()
+count = int(args.count)
+
+framework = Framework()
+framework.run(count)

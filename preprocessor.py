@@ -1,6 +1,8 @@
-import lstm_baseline_preprocessor as processor
+import lstm_baseline_preprocessor
 
 import numpy as np
+
+import argparse
 
 def read_corpus(count):
     corpus = open("corpus")
@@ -21,9 +23,23 @@ def read_corpus(count):
 
 def process(preprocessor, count, window_size, vowel):
     words = read_corpus(count)
-    # print(words[1800:])
     px, py = preprocessor(words, window_size, vowel)
     np.savez("prepared_" + vowel, x=px, y=py)
-    # return preprocessor(words, window_size, vowel)
 
-process(processor.make_windows, 10000, 1, 'a')
+parser = argparse.ArgumentParser()
+parser.add_argument("preprocessor")
+parser.add_argument("count")
+parser.add_argument("window_size")
+parser.add_argument("vowel")
+
+args = parser.parse_args()
+preprocessor = args.preprocessor
+count = int(args.count)
+window_size = int(args.window_size)
+vowel = args.vowel
+
+preprocess = {}
+if preprocessor == 'lstm_baseline':
+    preprocess = lstm_baseline_preprocessor.make_windows
+
+process(preprocess, count, window_size, vowel)
