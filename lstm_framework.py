@@ -24,11 +24,6 @@ class Framework:
         net.run(self.train_x[vowel], self.test_x[vowel], self.train_y[vowel], self.test_y[vowel])
 
         model = net.get_model()
-
-        # x, y = preprocessor.make_windows(["tevékenység"], 1, self.CURRENT_VOWEL)
-        # print(x)
-        # print(y)
-        # print(model.predict(x))
         
     def run(self, count):
         self.load_prepared_data()
