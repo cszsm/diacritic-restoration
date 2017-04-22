@@ -48,7 +48,7 @@ def read_corpus(vowel, count):
 
 def process(preprocess, count, window_size, vowel):
     words = read_corpus(vowel, count)
-    px, py = preprocess(words, window_size, vowel)
+    px, py = preprocess(words, count, window_size, vowel)
     np.savez(os.path.join(RESOURCE_DIRECTORY, "prepared_" + vowel), x=px, y=py)
 
 parser = argparse.ArgumentParser()
@@ -65,6 +65,6 @@ vowel = args.vowel
 
 preprocess = {}
 if preprocessor == 'lstm_baseline':
-    preprocess = lstm_baseline_preprocessor.make_windows
+    preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor()
 
-process(preprocess, count, window_size, vowel)
+process(preprocess.make_windows, count, window_size, vowel)
