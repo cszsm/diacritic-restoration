@@ -46,9 +46,9 @@ def read_corpus(vowel, count):
     print("ERROR: Corpus has run out of words!")
     return words
 
-def process(preprocess, count, window_size, vowel):
+def process(preprocess):
     words = read_corpus(vowel, count)
-    px, py = preprocess(words, count, window_size, vowel)
+    px, py = preprocess(words)
     np.savez(os.path.join(RESOURCE_DIRECTORY, "prepared_" + vowel), x=px, y=py)
 
 parser = argparse.ArgumentParser()
@@ -65,6 +65,6 @@ vowel = args.vowel
 
 preprocess = {}
 if preprocessor == 'lstm_baseline':
-    preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor()
+    preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
 
-process(preprocess.make_windows, count, window_size, vowel)
+process(preprocess.make_windows)
