@@ -7,7 +7,7 @@ from keras.layers import LSTM
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
-import logger
+import logger as logger
 
 
 class Network:
@@ -37,16 +37,12 @@ class Network:
 
     def run(self, train_x, test_x, train_y, test_y):
 
-        print('vowel: ' + self.vowel)
         self.logger.log('\nvowel: ' + self.vowel)
 
         early_stopping = EarlyStopping(monitor='loss', patience=0)
         self.model.fit(train_x, train_y, batch_size=32, epochs=100, callbacks=[early_stopping], verbose=3)
         score = self.model.evaluate(test_x, test_y, batch_size=32)
 
-        print('\nscore:')
-        print(self.model.metrics_names)
-        print(score)
         self.logger.log('\nloss: ')
         self.logger.log(str(score[0]))
         self.logger.log('\naccuracy: ')

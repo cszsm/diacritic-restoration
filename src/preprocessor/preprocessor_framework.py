@@ -55,7 +55,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("preprocessor")
 parser.add_argument("count")
 parser.add_argument("window_size")
-parser.add_argument("vowel")
+parser.add_argument("--vowel")
 
 args = parser.parse_args()
 preprocessor = args.preprocessor
@@ -63,8 +63,16 @@ count = int(args.count)
 window_size = int(args.window_size)
 vowel = args.vowel
 
-preprocess = {}
-if preprocessor == 'lstm_baseline':
-    preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
+if vowel:
+    preprocess = {}
+    if preprocessor == 'lstm_baseline':
+        preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
 
-process(preprocess.make_windows)
+    process(preprocess.make_windows)
+
+else:
+    for vowel in VOWEL_TABLE.keys():
+        if preprocessor == 'lstm_baseline':
+            preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
+
+        process(preprocess.make_windows)
