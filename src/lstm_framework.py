@@ -12,6 +12,10 @@ LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
 
 class Framework:
 
+    log_path = '../logs'
+    model_path = '../models'
+    res_path = '../res'
+
     train_x = {}
     train_y = {}
     test_x = {}
@@ -24,7 +28,8 @@ class Framework:
 
         self.model = net.get_model()
         self.save_model(vowel, id)
-        
+
+
     def run(self, count):
         self.load_prepared_data()
 
@@ -35,7 +40,7 @@ class Framework:
             params = network.Network.get_random_parameters()
             self.logger.log('\nid: model_' + str(i))
             self.logger.log('\n\nunits: ' + str(params['units']))
-            os.makedirs(os.path.join('../models', self.filename + '_' + str(i)))
+            os.makedirs(os.path.join(self.model_path, self.filename + '_' + str(i)))
             for vowel in LATIN_VOWELS:
                 self.run_network(params, vowel, str(i))
 
@@ -44,7 +49,7 @@ class Framework:
         filename = date
 
         i = 1
-        while(os.path.isfile(os.path.join('../logs', filename))):
+        while(os.path.isfile(os.path.join(self.log_path, filename))):
             filename = date + "-" + str(i)
             i += 1
             print(filename)
@@ -53,12 +58,12 @@ class Framework:
 
     def load_prepared_data(self):
         for vowel in LATIN_VOWELS:
-            prepared_data = np.load(os.path.join("../res", "prepared_" + vowel + ".npz"))
+            prepared_data = np.load(os.path.join(self.res_path, "prepared_" + vowel + ".npz"))
             self.train_x[vowel], self.test_x[vowel], self.train_y[vowel], self.test_y[vowel] = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.2)
 
 
     def save_model(self, vowel, id):
-        self.model.save(os.path.join('../models', self.filename + '_' + id, vowel + '.model'))
+        self.model.save(os.path.join(self.model_path, self.filename + '_' + id, vowel + '.model'))
 
 
 parser = argparse.ArgumentParser()

@@ -1,4 +1,5 @@
 import lstm_baseline_preprocessor
+import feedforward_preprocessor
 
 import numpy as np
 import os.path
@@ -8,48 +9,66 @@ import argparse
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
 RESOURCE_DIRECTORY = '../../res/'
 
-def read_corpus(vowel, count):
-    corpus = open(os.path.join(RESOURCE_DIRECTORY, "corpus"))
-    words = []
-    accent_counter = {}
+class PreprocessorFramework:
 
-    accents = VOWEL_TABLE[vowel]
-    for accent in accents:
-        accent_counter[accent] = 0
+    def __init__(self, preprocessor):
+        self.preprocessor = preprocessor
 
-    for i in range(4):
-        next(corpus)
+    def read_corpus(self, vowel, count):
+        corpus = open(os.path.join(RESOURCE_DIRECTORY, "corpus"))
+        words = []
+        accent_counter = {}
 
-    line_counter = 0
-    for line in corpus:
-        line_counter += 1
-        enough = True
+        accents = VOWEL_TABLE[vowel]
+        for accent in accents:
+            accent_counter[accent] = 0
 
-        splits = line.split()
-        if splits != []:
-            word = splits[0]
-            words.append(word)
+        for i in range(4):
+            next(corpus)
 
-            for accent in accents:
-                accent_counter[accent] += word.count(accent)
-                if accent_counter[accent] < count:
-                    enough = False
+        line_counter = 0
+        for line in corpus:
+            line_counter += 1
+            enough = True
 
-            if enough:
-                return words
+            splits = line.split()
+            if splits != []:
+                word = splits[0]
+                words.append(word)
 
-        if line_counter % 10000 == 0:
-            print('line: ' + str(line_counter))
-            for accent in accents:
-                print("\t" + accent + ": " + str(accent_counter[accent]))
+                for accent in accents:
+                    accent_counter[accent] += word.count(accent)
+                    if accent_counter[accent] < count:
+                        enough = False
 
-    print("ERROR: Corpus has run out of words!")
-    return words
+                if enough:
+                    return words
 
-def process(preprocess):
-    words = read_corpus(vowel, count)
-    px, py = preprocess(words)
-    np.savez(os.path.join(RESOURCE_DIRECTORY, "prepared_" + vowel), x=px, y=py)
+            if line_counter % 10000 == 0:
+                print('line: ' + str(line_counter))
+                for accent in accents:
+                    print("\t" + accent + ": " + str(accent_counter[accent]))
+
+        print("ERROR: Corpus has run out of words!")
+        return words
+
+    def process(self, count, window_size, vowel=None):
+
+        if vowel:
+            words = self.read_corpus(vowel, count)
+            px, py = self.create_preprocessor(count, window_size, vowel).make_windows(words)
+            np.savez(os.path.join(RESOURCE_DIRECTORY, self.preprocessor + "_prepared_" + vowel), x=px, y=py)
+        else:
+            for vowel in VOWEL_TABLE.keys():
+                words = self.read_corpus(vowel, count)
+                px, py = self.create_preprocessor(count, window_size, vowel).make_windows(words)
+                np.savez(os.path.join(RESOURCE_DIRECTORY, self.preprocessor + "_prepared_" + vowel), x=px, y=py)
+
+    def create_preprocessor(self, count, window_size, vowel):
+        if self.preprocessor == 'lstm_baseline':
+            return lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
+        elif self.preprocessor == 'feedforward':
+            return feedforward_preprocessor.FeedforwardPreprocessor(count, window_size, vowel)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("preprocessor")
@@ -63,16 +82,5 @@ count = int(args.count)
 window_size = int(args.window_size)
 vowel = args.vowel
 
-if vowel:
-    preprocess = {}
-    if preprocessor == 'lstm_baseline':
-        preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
-
-    process(preprocess.make_windows)
-
-else:
-    for vowel in VOWEL_TABLE.keys():
-        if preprocessor == 'lstm_baseline':
-            preprocess = lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
-
-        process(preprocess.make_windows)
+framework = PreprocessorFramework(preprocessor)
+framework.process(count, window_size, vowel)
