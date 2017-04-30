@@ -7,7 +7,7 @@ from keras.layers import LSTM
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
-import logger as logger
+# import logger
 
 
 class Network:
@@ -55,5 +55,9 @@ class Network:
     @staticmethod
     def get_random_parameters():
         params = {}
-        params['units'] = random.randrange(10, 1000, 10)
+        params['units'] = random.randrange(10, 100, 10)
         return params
+
+    @staticmethod
+    def log_parameters(l, params):
+        l.log('\n\nunits: ' + str(params['units']))

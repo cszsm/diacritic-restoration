@@ -2,7 +2,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 
 import lstm_baseline_network as network
-import logger as logger
+import logger
 
 import datetime
 import os.path
@@ -12,7 +12,7 @@ LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
 
 class Framework:
 
-    log_path = '../logs'
+    log_path = '../logs/lstm_baseline'
     model_path = '../models'
     res_path = '../res'
 
