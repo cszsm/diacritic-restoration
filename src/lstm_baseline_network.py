@@ -8,7 +8,7 @@ from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
 # import logger
-
+# import preprocessor.lstm_baseline_preprocessor as p
 
 class Network:
 
@@ -47,6 +47,10 @@ class Network:
         self.logger.log(str(score[0]))
         self.logger.log('\naccuracy: ')
         self.logger.log(str(score[1]))
+
+        # test
+        # example = p.LstmBaselinePreprocessor.preprocess('Akár elég őzek', 1)
+        # print(self.model.predict(example))
 
 
     def get_model(self):

@@ -3,7 +3,7 @@ from collections import deque
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
 
-import preprocessor_common as common
+import preprocessor.preprocessor_common as common
 
 VOWELS = "aáeéiíoóöőuúüű"
 # VOWEL_TABLE = {"a": ["á"], "e": ["é"], "i": ["í"],
@@ -56,8 +56,8 @@ class LstmBaselinePreprocessor:
         for word in text:
             word_counter += 1
 
-            normalized_word = common.normalize_text(word)
-            padded_word = common.pad_word(normalized_word.lower(), self.window_size)
+            normalized_word = common.normalize_text(word.lower())
+            padded_word = common.pad_word(normalized_word, self.window_size)
 
             new_windows, new_accents = self.make_windows_from_word(padded_word)
 
@@ -74,3 +74,44 @@ class LstmBaselinePreprocessor:
     def make_windows(self, text):
         common.fit_encoders()
         return self.make_windows_from_text(text)
+
+
+    @staticmethod
+    def preprocess(text, window_size):
+        common.fit_encoders()
+        windows = {}
+
+        for vowel in VOWEL_TABLE.keys():
+            windows[vowel] = []
+
+            for word in text:
+                normalized_word = common.normalize_text(word.lower())
+                padded_word = common.pad_word(normalized_word, window_size)
+
+                print(padded_word)
+
+                new_windows = LstmBaselinePreprocessor.helper(padded_word, window_size, vowel)
+
+                windows[vowel] += new_windows
+
+        return windows
+
+    @staticmethod
+    def helper(word, window_size, vowel):
+        windows = []
+
+        sliding_window = deque((), window_size * 2 + 1)
+
+        for character in word[:sliding_window.maxlen - 1]:
+            sliding_window.append(character)
+
+        for character in word[sliding_window.maxlen - 1:]:
+            sliding_window.append(character)
+
+            if (sliding_window[window_size] in VOWEL_TABLE[vowel]):
+                normalized_list = list(common.deaccentize_list(list(sliding_window)))
+                transformed_list = common.transform_list(normalized_list)
+
+                windows.append(transformed_list)
+
+        return windows
