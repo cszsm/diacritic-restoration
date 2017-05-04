@@ -1,7 +1,7 @@
 import random
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Activation, Dense, Dropout
 from keras.layers import Embedding
 from keras.layers import LSTM
 from keras.optimizers import SGD
@@ -29,7 +29,8 @@ class Network:
         if self.vowel in ['o', 'u']:
             output_length = 4
 
-        self.model.add(Dense(output_length, activation='sigmoid'))
+        self.model.add(Dense(output_length))
+        self.model.add(Activation('sigmoid'))
 
         self.model.compile(loss='binary_crossentropy',
                       optimizer='rmsprop',

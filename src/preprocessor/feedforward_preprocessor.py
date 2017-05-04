@@ -3,7 +3,7 @@ from sklearn.feature_extraction import DictVectorizer
 
 import numpy as np
 
-import preprocessor_common as common
+import preprocessor.preprocessor_common as common
 
 vowel_table = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
 vectorizer = DictVectorizer()
@@ -104,7 +104,8 @@ class FeedforwardPreprocessor:
 
 
     # generates template windows for the alphabet
-    def generate_windows(self):
+    @staticmethod
+    def generate_windows(window_size):
         windows = []
         alphabet = "abcdefghijklmnopqrstuvwxyz 0_*"
         alphabet_size = len(alphabet)
@@ -112,21 +113,84 @@ class FeedforwardPreprocessor:
         for i in range(alphabet_size):
             new_window = {}
 
-            end_of_slice = i + self.window_size * 2
+            end_of_slice = i + window_size * 2
             if end_of_slice <= alphabet_size:
                 alphabet_slice = alphabet[i:end_of_slice]
             else:
                 alphabet_slice = alphabet[i:alphabet_size]
                 alphabet_slice += alphabet[0:end_of_slice - alphabet_size]
 
-            for j in range(self.window_size):
-                new_window[-1 * (j + 1)] = alphabet_slice[self.window_size - 1 - j]
-                new_window[j + 1] = alphabet_slice[self.window_size + j]
+            for j in range(window_size):
+                new_window[-1 * (j + 1)] = alphabet_slice[window_size - 1 - j]
+                new_window[j + 1] = alphabet_slice[window_size + j]
 
             windows.append(new_window)
 
         return windows
 
     def make_windows(self, text):
-        vectorizer.fit(self.generate_windows())
+        vectorizer.fit(FeedforwardPreprocessor.generate_windows(self.window_size))
         return self.make_windows_from_text(text)
+
+
+    @staticmethod
+    def preprocess(text, window_size):
+        vectorizer.fit(FeedforwardPreprocessor.generate_windows(window_size))
+        windows = {}
+        
+        for vowel in vowel_table.keys():
+            windows[vowel] = []
+
+            for word in text:
+                print('text: ' + word)
+
+                skip = True
+
+                for c in vowel_table[vowel]:
+                    if c in word:
+                        skip = False
+                if skip:
+                    continue
+                    
+                x = FeedforwardPreprocessor.helper(word, window_size, vowel)
+
+                if len(x) == 0:
+                    continue
+
+                if windows[vowel] == []:
+                    windows[vowel] = vectorizer.transform(x).toarray()
+                else:
+                    tmp = vectorizer.transform(x)
+                    for tx in tmp:
+                        windows[vowel] = np.concatenate((windows[vowel], tx.toarray()))
+
+        return windows
+
+    @staticmethod
+    def helper(word, window_size, vowel):
+        x_e = []
+        lower_text = word.lower()
+
+        window = deque((), window_size * 2 + 1)
+        for i in range(window.maxlen):
+            window.append("_")
+            lower_text += "_"
+
+        for character in lower_text:
+            window.append(character)
+            
+            if window[window_size] in vowel_table[vowel]:
+                x_e.append(FeedforwardPreprocessor.static_create_row(window.copy(), window_size))
+
+        return x_e
+
+    @staticmethod
+    def static_create_row(window, window_size):
+        row = {}
+
+        for i in range(-window_size, window_size + 1):
+            row[i] = common.normalize_character(common.deaccentize(window.popleft()))
+
+        del row[0]
+
+        return row

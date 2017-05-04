@@ -19,32 +19,34 @@ class Network:
         if vowel in 'ou':
             output_size = 4
 
-        self.n_input = tf.placeholder(tf.float32, [None, input_size])
+        tf.reset_default_graph()
+
+        self.n_input = tf.placeholder(tf.float32, [None, input_size], name='n_input')
         self.n_output = tf.placeholder(tf.float32, [None, output_size])
 
         self.hidden_neurons = 100
         self.hidden_neurons2 = 10
 
-        self.b_hidden = tf.Variable(tf.random_normal([self.hidden_neurons]))
+        self.b_hidden = tf.Variable(tf.random_normal([self.hidden_neurons]), name='b_hidden')
         self.W_hidden = tf.Variable(tf.random_normal(
-            [input_size, self.hidden_neurons]))
+            [input_size, self.hidden_neurons]), name='W_hidden')
         self.hidden = tf.sigmoid(
             tf.matmul(self.n_input, self.W_hidden) + self.b_hidden)
 
-        self.b_hidden2 = tf.Variable(tf.random_normal([self.hidden_neurons2]))
+        self.b_hidden2 = tf.Variable(tf.random_normal([self.hidden_neurons2]), name='b_hidden2')
         self.W_hidden2 = tf.Variable(tf.random_normal(
-            [self.hidden_neurons, self.hidden_neurons2]))
+            [self.hidden_neurons, self.hidden_neurons2]), name='W_hidden2')
         self.hidden2 = tf.sigmoid(
             tf.matmul(self.hidden, self.W_hidden2) + self.b_hidden2)
 
         self.W_output = tf.Variable(tf.random_normal(
-            [self.hidden_neurons2, output_size]))
+            [self.hidden_neurons2, output_size]), name='W_output')
         # output = tf.sigmoid(tf.matmul(hidden, W_output))
-        self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output))
+        self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output), name='output')
+        # self.output = tf.identity(self.output, name='output')
 
         # cost = tf.reduce_mean(tf.square(n_output - output))
-        self.cost = tf.reduce_mean(-tf.reduce_sum(self.n_output *
-                                             tf.log(self.output), reduction_indices=[1]))
+        self.cost = tf.reduce_mean(-tf.reduce_sum(self.n_output * tf.log(self.output), reduction_indices=[1]))
 
         # optimizer = tf.train.GradientDescentOptimizer(0.5)
         self.optimizer = tf.train.AdamOptimizer()
@@ -53,14 +55,15 @@ class Network:
         # init = tf.initialize_all_variables()
         self.init = tf.global_variables_initializer()
 
+        # self.saver = tf.train.Saver(var_list={'output': self.output})
         self.saver = tf.train.Saver()
 
     def run(self, train_x, train_y, valid_x, valid_y, test_x, test_y):
 
         self.logger.log('\nvowel: ' + self.vowel)
 
-        self.model = tf.Session()
-        self.model.run(self.init)
+        self.sess = tf.Session()
+        self.sess.run(self.init)
         print("training started")
 
         # prepared_data = np.load("prepared_" + self.vowel + ".npz")
@@ -81,7 +84,7 @@ class Network:
         start_time = time.perf_counter()
         for i in range(50001):
             batch_x, batch_y = self.next_batch(train_x, train_y, 100)
-            cvalues = self.model.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2,
+            cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2,
                                      self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
 
             # early stopping
@@ -89,17 +92,17 @@ class Network:
                 last_loss = cvalues[1]
                 losses += [last_loss]
 
-                vcost = self.model.run(self.cost, feed_dict={
+                vcost = self.sess.run(self.cost, feed_dict={
                                        self.n_input: valid_x, self.n_output: valid_y})
                 vlosses += [vcost]
 
                 if vcost < best_loss:
                     best_epoch = i
                     best_loss = vcost
-                    self.saver.save(self.model, "./session")
+                    self.saver.save(self.sess, "./session")
                 elif i - best_epoch > 5000 and eepoch == 0:
                     print('early stopping')
-                    self.saver.restore(self.model, "./session")
+                    self.saver.restore(self.sess, "./session")
                     eepoch = best_epoch
                     break
 
@@ -116,13 +119,18 @@ class Network:
         print("elapsed time: " + self.convert_time(time.perf_counter() - start_time))
         print("best loss: " + str(best_loss))
 
-        result = self.model.run(self.output, feed_dict={self.n_input: test_x})
+        result = self.sess.run(self.output, feed_dict={self.n_input: test_x})
 
     def get_model(self):
-        return self.model
+        return self.sess
 
     def save_model(self, path):
-        self.saver.save(self.model, path)
+        # with self.sess.graph.as_default():
+        #     saver = tf.train.Saver()
+        #     p = saver.save(self.sess, path, meta_graph_suffix='meta', write_meta_graph=True)
+        #     print('path: ' + p)
+        p = self.saver.save(self.sess, path)
+        print('path: ' + p)
 
     @staticmethod
     def get_random_parameters():

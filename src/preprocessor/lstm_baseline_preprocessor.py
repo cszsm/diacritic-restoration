@@ -88,7 +88,7 @@ class LstmBaselinePreprocessor:
                 normalized_word = common.normalize_text(word.lower())
                 padded_word = common.pad_word(normalized_word, window_size)
 
-                print(padded_word)
+                # print(padded_word)
 
                 new_windows = LstmBaselinePreprocessor.helper(padded_word, window_size, vowel)
 
