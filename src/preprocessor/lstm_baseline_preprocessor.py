@@ -3,11 +3,9 @@ from collections import deque
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
 
-import preprocessor.preprocessor_common as common
+import preprocessor_common as common
 
 VOWELS = "aáeéiíoóöőuúüű"
-# VOWEL_TABLE = {"a": ["á"], "e": ["é"], "i": ["í"],
-#                "o": ["ó", "ö", "ő"], "u": ["ú", "ü", "ű"]}
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
 VECTORIZER = DictVectorizer()
 
@@ -87,8 +85,6 @@ class LstmBaselinePreprocessor:
             for word in text:
                 normalized_word = common.normalize_text(word.lower())
                 padded_word = common.pad_word(normalized_word, window_size)
-
-                # print(padded_word)
 
                 new_windows = LstmBaselinePreprocessor.helper(padded_word, window_size, vowel)
 

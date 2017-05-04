@@ -41,21 +41,15 @@ class Network:
 
         self.W_output = tf.Variable(tf.random_normal(
             [self.hidden_neurons2, output_size]), name='W_output')
-        # output = tf.sigmoid(tf.matmul(hidden, W_output))
         self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output), name='output')
-        # self.output = tf.identity(self.output, name='output')
 
-        # cost = tf.reduce_mean(tf.square(n_output - output))
         self.cost = tf.reduce_mean(-tf.reduce_sum(self.n_output * tf.log(self.output), reduction_indices=[1]))
 
-        # optimizer = tf.train.GradientDescentOptimizer(0.5)
         self.optimizer = tf.train.AdamOptimizer()
         self.train = self.optimizer.minimize(self.cost)
 
-        # init = tf.initialize_all_variables()
         self.init = tf.global_variables_initializer()
 
-        # self.saver = tf.train.Saver(var_list={'output': self.output})
         self.saver = tf.train.Saver()
 
     def run(self, train_x, train_y, valid_x, valid_y, test_x, test_y):
@@ -65,13 +59,6 @@ class Network:
         self.sess = tf.Session()
         self.sess.run(self.init)
         print("training started")
-
-        # prepared_data = np.load("prepared_" + self.vowel + ".npz")
-        # train_x, valid_test_x, train_y, valid_test_y = train_test_split(
-        #     prepared_data["x"], prepared_data["y"], test_size=0.4)
-        # valid_x, test_x, valid_y, test_y = train_test_split(
-        #     valid_test_x, valid_test_y, test_size=0.5)
-
 
         best_epoch = 0
         best_loss = 100
@@ -84,16 +71,14 @@ class Network:
         start_time = time.perf_counter()
         for i in range(50001):
             batch_x, batch_y = self.next_batch(train_x, train_y, 100)
-            cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2,
-                                     self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+            cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
 
             # early stopping
             if i % 50 == 0:
                 last_loss = cvalues[1]
                 losses += [last_loss]
 
-                vcost = self.sess.run(self.cost, feed_dict={
-                                       self.n_input: valid_x, self.n_output: valid_y})
+                vcost = self.sess.run(self.cost, feed_dict={self.n_input: valid_x, self.n_output: valid_y})
                 vlosses += [vcost]
 
                 if vcost < best_loss:
@@ -125,22 +110,19 @@ class Network:
         return self.sess
 
     def save_model(self, path):
-        # with self.sess.graph.as_default():
-        #     saver = tf.train.Saver()
-        #     p = saver.save(self.sess, path, meta_graph_suffix='meta', write_meta_graph=True)
-        #     print('path: ' + p)
-        p = self.saver.save(self.sess, path)
-        print('path: ' + p)
+        self.saver.save(self.sess, path)
 
     @staticmethod
     def get_random_parameters():
         params = {}
-        # TODO
+        params['hidden_neurons'] = random.randrange(10, 1000, 10)
+        params['hidden_neurons2'] = random.randrange(10, 1000, 10)
         return params
 
     @staticmethod
-    def log_parameters(logger, params):
-        # TODO
+    def log_parameters(l, params):
+        l.log('\n\nhidden_neurons: ' + str(params['hidden_neurons']))
+        l.log('\n\nhidden_neurons2: ' + str(params['hidden_neurons2']))
         pass
 
     def next_batch(self, data_x, data_y, count):

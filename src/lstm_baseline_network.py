@@ -7,9 +7,6 @@ from keras.layers import LSTM
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
-# import logger
-# import preprocessor.lstm_baseline_preprocessor as p
-
 class Network:
 
     vowel = ''
@@ -49,10 +46,6 @@ class Network:
         self.logger.log('\naccuracy: ')
         self.logger.log(str(score[1]))
 
-        # test
-        # example = p.LstmBaselinePreprocessor.preprocess('Akár elég őzek', 1)
-        # print(self.model.predict(example))
-
 
     def get_model(self):
         return self.model
@@ -60,7 +53,7 @@ class Network:
     @staticmethod
     def get_random_parameters():
         params = {}
-        params['units'] = random.randrange(10, 100, 10)
+        params['units'] = random.randrange(100, 1000, 100)
         return params
 
     @staticmethod
