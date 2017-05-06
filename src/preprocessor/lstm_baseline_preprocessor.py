@@ -24,14 +24,18 @@ class LstmBaselinePreprocessor:
 
         sliding_window = deque((), self.window_size * 2 + 1)
 
-        for character in word[:sliding_window.maxlen - 1]:
+        normalized_word = common.normalize_text(word.lower())
+        padded_word = common.pad_word(normalized_word, self.window_size)
+
+        for character in padded_word[:sliding_window.maxlen - 1]:
             sliding_window.append(character)
 
-        for character in word[sliding_window.maxlen - 1:]:
+        for character in padded_word[sliding_window.maxlen - 1:]:
             sliding_window.append(character)
 
             if (sliding_window[self.window_size] in VOWEL_TABLE[self.vowel]) and (self.accent_counter[sliding_window[self.window_size]] < self.count):
                 normalized_list = list(common.deaccentize_list(list(sliding_window)))
+                del normalized_list[self.window_size]
                 transformed_list = common.transform_list(normalized_list)
                 transformed_accents = sliding_window[self.window_size]
 
@@ -54,10 +58,10 @@ class LstmBaselinePreprocessor:
         for word in text:
             word_counter += 1
 
-            normalized_word = common.normalize_text(word.lower())
-            padded_word = common.pad_word(normalized_word, self.window_size)
+            # normalized_word = common.normalize_text(word.lower())
+            # padded_word = common.pad_word(normalized_word, self.window_size)
 
-            new_windows, new_accents = self.make_windows_from_word(padded_word)
+            new_windows, new_accents = self.make_windows_from_word(word)
 
             windows += new_windows
             accents += new_accents
@@ -83,10 +87,10 @@ class LstmBaselinePreprocessor:
             windows[vowel] = []
 
             for word in text:
-                normalized_word = common.normalize_text(word.lower())
-                padded_word = common.pad_word(normalized_word, window_size)
+                # normalized_word = common.normalize_text(word.lower())
+                # padded_word = common.pad_word(normalized_word, window_size)
 
-                new_windows = LstmBaselinePreprocessor.helper(padded_word, window_size, vowel)
+                new_windows = LstmBaselinePreprocessor.helper(word, window_size, vowel)
 
                 windows[vowel] += new_windows
 
@@ -98,16 +102,38 @@ class LstmBaselinePreprocessor:
 
         sliding_window = deque((), window_size * 2 + 1)
 
-        for character in word[:sliding_window.maxlen - 1]:
+        normalized_word = common.normalize_text(word.lower())
+        padded_word = common.pad_word(normalized_word, window_size)
+
+        for character in padded_word[:sliding_window.maxlen - 1]:
             sliding_window.append(character)
 
-        for character in word[sliding_window.maxlen - 1:]:
+        for character in padded_word[sliding_window.maxlen - 1:]:
             sliding_window.append(character)
 
-            if (sliding_window[window_size] in VOWEL_TABLE[vowel]):
+            if sliding_window[window_size] in VOWEL_TABLE[vowel]:
                 normalized_list = list(common.deaccentize_list(list(sliding_window)))
+                del normalized_list[window_size]
                 transformed_list = common.transform_list(normalized_list)
+
+                print(LstmBaselinePreprocessor.decode(transformed_list))
 
                 windows.append(transformed_list)
 
         return windows
+
+    @staticmethod
+    def fit_encoders():
+        common.fit_encoders()
+
+    @staticmethod
+    def decode(window):
+        decoded_window = []
+        for c in window:
+            decoded_window.append(np.array(c).argmax(axis=0))
+
+        return decoded_window
+
+LstmBaselinePreprocessor.fit_encoders()
+
+LstmBaselinePreprocessor.helper('vad', 4, 'a')

@@ -7,7 +7,7 @@ import os.path
 import argparse
 
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
-RESOURCE_DIRECTORY = '../../res/'
+RESOURCE_DIRECTORY = '../../res/prepared/'
 
 class PreprocessorFramework:
 
@@ -57,18 +57,23 @@ class PreprocessorFramework:
         if vowel:
             words = self.read_corpus(vowel, count)
             px, py = self.create_preprocessor(count, window_size, vowel).make_windows(words)
-            np.savez(os.path.join(RESOURCE_DIRECTORY, self.preprocessor + "_prepared_" + vowel), x=px, y=py)
+            np.savez(self.create_path(window_size, vowel), x=px, y=py)
         else:
             for vowel in VOWEL_TABLE.keys():
                 words = self.read_corpus(vowel, count)
                 px, py = self.create_preprocessor(count, window_size, vowel).make_windows(words)
-                np.savez(os.path.join(RESOURCE_DIRECTORY, self.preprocessor + "_prepared_" + vowel), x=px, y=py)
+                np.savez(self.create_path(window_size, vowel), x=px, y=py)
 
     def create_preprocessor(self, count, window_size, vowel):
         if self.preprocessor == 'lstm_baseline':
             return lstm_baseline_preprocessor.LstmBaselinePreprocessor(count, window_size, vowel)
         elif self.preprocessor == 'feedforward':
             return feedforward_preprocessor.FeedforwardPreprocessor(count, window_size, vowel)
+
+    def create_path(self, window_size, vowel):
+        parent_path = os.path.join(RESOURCE_DIRECTORY, self.preprocessor, str(window_size))
+        os.makedirs(parent_path, exist_ok=True)
+        return os.path.join(parent_path, vowel)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("preprocessor")
