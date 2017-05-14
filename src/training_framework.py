@@ -9,7 +9,8 @@ import datetime
 import os.path
 import argparse
 
-LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
+# LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
+LATIN_VOWELS = ['u']
 
 class Framework:
 
@@ -138,7 +139,6 @@ class Framework:
     def save_model(self, model, vowel, id):
         """Saves the model."""
         model.save(os.path.join(self.model_path, self.filename + '_' + id, vowel + '.model'))
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('model', help='can be \'feedforward\' or \'lstm_baseline\'')

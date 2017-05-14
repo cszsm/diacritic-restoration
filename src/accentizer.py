@@ -88,7 +88,7 @@ if args.network_type is None or args.model_id is None or args.text is None:
     for f in files:
         print(f)
         accentize('arvizturo tukorfurogep', 'feedforward', f)
-    
+
     files = os.listdir(os.path.join(MODEL_PATH, 'lstm_baseline'))
     for f in files:
         print(f)
