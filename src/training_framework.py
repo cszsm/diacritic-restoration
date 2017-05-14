@@ -9,8 +9,8 @@ import datetime
 import os.path
 import argparse
 
-# LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
-LATIN_VOWELS = ['u']
+LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
+# LATIN_VOWELS = ['u']
 
 class Framework:
 

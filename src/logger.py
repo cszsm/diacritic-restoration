@@ -7,4 +7,4 @@ class Logger:
 
     def log(self, text):
         print(text)
-        self.file.write(text)
+        self.file.write(text + '\n')

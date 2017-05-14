@@ -112,12 +112,16 @@ class Network:
     def save_model(self, path):
         self.saver.save(self.sess, path)
 
+    # @staticmethod
+    # def get_random_parameters():
+    #     params = {}
+    #     params['hidden_neurons'] = random.randrange(10, 1000, 10)
+    #     params['hidden_neurons2'] = random.randrange(10, 1000, 10)
+    #     return params
+
     @staticmethod
-    def get_random_parameters():
-        params = {}
-        params['hidden_neurons'] = random.randrange(10, 1000, 10)
-        params['hidden_neurons2'] = random.randrange(10, 1000, 10)
-        return params
+    def get_exhaustive_parameters():
+        params_list = []
 
     @staticmethod
     def log_parameters(l, params):
