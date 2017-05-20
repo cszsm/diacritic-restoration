@@ -7,7 +7,7 @@ import os.path
 import argparse
 
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
-RESOURCE_DIRECTORY = '../../res/prepared/'
+RESOURCE_DIRECTORY = '../../res/'
 
 class PreprocessorFramework:
 
@@ -71,7 +71,7 @@ class PreprocessorFramework:
             return feedforward_preprocessor.FeedforwardPreprocessor(count, window_size, vowel)
 
     def create_path(self, window_size, vowel):
-        parent_path = os.path.join(RESOURCE_DIRECTORY, self.preprocessor, str(window_size))
+        parent_path = os.path.join(RESOURCE_DIRECTORY, 'prepared', self.preprocessor, str(window_size))
         os.makedirs(parent_path, exist_ok=True)
         return os.path.join(parent_path, vowel)
 

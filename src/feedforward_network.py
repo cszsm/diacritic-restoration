@@ -70,7 +70,7 @@ class Network:
 
         self.saver = tf.train.Saver()
 
-    def run(self, train_x, train_y, valid_x, valid_y, test_x, test_y):
+    def run(self, train_x, train_y, valid_x, valid_y, test_x, test_y, hidden):
 
         self.logger.log('\nvowel: ' + self.vowel)
 
@@ -89,7 +89,13 @@ class Network:
         start_time = time.perf_counter()
         for i in range(50001):
             batch_x, batch_y = self.next_batch(train_x, train_y, 100)
-            cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+
+            if hidden == 1:
+                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+            elif hidden == 2:
+                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+            else:
+                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_hidden3, self.b_hidden3, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
 
             # early stopping
             if i % 50 == 0:
@@ -123,6 +129,14 @@ class Network:
         print("best loss: " + str(best_loss))
 
         result = self.sess.run(self.output, feed_dict={self.n_input: test_x})
+            
+        success = 0
+
+        for i in range(len(result)):
+            if np.array_equal(decide(result[i], self.vowel), test_y[i]):
+                success += 1
+                
+        self.logger.log("accuracy (" + str(last_loss) + "): " + str(success / len(result)))
 
     def get_model(self):
         return self.sess
@@ -141,9 +155,12 @@ class Network:
     def get_exhaustive_parameters():
         params_list = []
 
-        for i in [10, 100]:
-            for j in [0, 10, 100]:
-                for k in [0, 10, 100]:
+        # for i in range(10, 100, 10):
+        #     for j in range(0, 100, 10):
+        #         for k in range(0, 100, 10):
+        for i in range(100, 110, 10):
+            for j in range(10, 11, 10):
+                for k in range(0, 1, 10):
 
                     if j == 0 and k != 0:
                         continue
@@ -152,15 +169,23 @@ class Network:
                     params['first'] = i
                     params['second'] = j
                     params['third'] = k
+                    
+                    if j == 0 and k == 0:
+                        params['hidden'] = 1
+                    elif k == 0:
+                        params['hidden'] = 2
+                    else:
+                        params['hidden'] = 3
+
                     params_list.append(params)
 
         return params_list
 
     @staticmethod
     def log_parameters(l, params):
-        l.log('\n\nhidden_neurons: ' + str(params['hidden_neurons']))
-        l.log('\n\nhidden_neurons2: ' + str(params['hidden_neurons2']))
-        pass
+        l.log('hidden_neurons: ' + str(params['first']))
+        l.log('hidden_neurons2: ' + str(params['second']))
+        l.log('hidden_neurons2: ' + str(params['third']))
 
     def next_batch(self, data_x, data_y, count):
         batch_x, batch_y = [], []
@@ -177,3 +202,11 @@ class Network:
         s, ms = divmod(s, 1)
 
         return "%02d:%02d:%04d" % (m, s, ms * 1000)
+                
+def decide(y, vowel):
+    if(vowel in "aei"):
+        tmp = [0, 0]
+    else:
+        tmp = [0, 0, 0, 0]
+    tmp[list(y).index(max(y))] = 1
+    return tmp
