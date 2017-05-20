@@ -9,8 +9,8 @@ import datetime
 import os.path
 import argparse
 
-LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
-# LATIN_VOWELS = ['u']
+# LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
+LATIN_VOWELS = ['u']
 
 class Framework:
 
@@ -35,7 +35,7 @@ class Framework:
         self.prepared_data['test_y'] = {}
 
         # self.filename = self.create_filename()
-        self.logger = logger.Logger(self.model_name)
+        # self.logger = logger.Logger(self.model_name)
 
     def run_network(self, params, vowel):
         """Runs a network with the given vowel and parameters."""
@@ -43,19 +43,24 @@ class Framework:
 
         # TODO
         if self.model_name == 'feedforward':
-            pass
-            # TODO
-            # net = feedforward_network.Network(params, vowel, self.logger)
-            # net.run(self.prepared_data['train_x'][vowel], self.prepared_data['train_y'][vowel], self.prepared_data['valid_x'][vowel], self.prepared_data['valid_y'][vowel], self.prepared_data['test_x'][vowel], self.prepared_data['test_y'][vowel])
-            # # self.save_model(net.get_model(), vowel, id)
-            # net.save_model(os.path.join(self.model_path, params['units'], params['window_size'], vowel + '.model'))
+            feedforward_logger = logger.Logger(self.model_name + '_u' + str(params['units']) + '_w' + str(params['window_size']) + '_' + vowel)
+            self.network.Network.log_parameters(feedforward_logger, params)
+
+            net = feedforward_network.Network(params, vowel, feedforward_logger)
+            net.run(self.prepared_data['train_x'][vowel], self.prepared_data['train_y'][vowel], self.prepared_data['valid_x'][vowel], self.prepared_data['valid_y'][vowel], self.prepared_data['test_x'][vowel], self.prepared_data['test_y'][vowel])
+            # self.save_model(net.get_model(), vowel, id)
+            net.save_model(os.path.join(self.model_path, str(params['units']), str(params['window_size']), vowel + '.model'))
+
         elif self.model_name == 'lstm_baseline':
-            net = lstm_baseline_network.Network(params, vowel, self.logger)
+            lstm_logger = logger.Logger(self.model_name + '_u' + str(params['units']) + '_w' + str(params['window_size']) + '_' + vowel)
+            self.network.Network.log_parameters(lstm_logger, params)
+
+            net = lstm_baseline_network.Network(params, vowel, lstm_logger)
             net.run(self.prepared_data['train_x'][vowel], self.prepared_data['test_x'][vowel], self.prepared_data['train_y'][vowel], self.prepared_data['test_y'][vowel])
             # self.save_model(net.get_model(), vowel, id)
             net.get_model().save(os.path.join(self.model_path, str(params['units']), str(params['window_size']), vowel + '.model'))
 
-        self.logger.log('\n\n')
+        # self.logger.log('\n\n')
 
 
 
@@ -78,7 +83,6 @@ class Framework:
 
         for params in params_list:
             self.prepared_data = self.load_prepared_data(params['window_size'])
-            self.network.Network.log_parameters(self.logger, params)
             os.makedirs(os.path.join(self.model_path, str(params['units']), str(params['window_size'])), exist_ok=True)
             for vowel in LATIN_VOWELS:
                 self.run_network(params, vowel)
@@ -116,18 +120,17 @@ class Framework:
         prepared = {}
         prepared['train_x'] = {}
         prepared['train_y'] = {}
-        # prepared['valid_x'] = {}
-        # prepared['valid_y'] = {}
+        #TODO
+        prepared['valid_x'] = {}
+        prepared['valid_y'] = {}
         prepared['test_x'] = {}
         prepared['test_y'] = {}
 
         if self.model_name == 'feedforward':
-            pass
-            # TODO
-            # for vowel in LATIN_VOWELS:
-            #     prepared_data = np.load(os.path.join(self.res_path, 'prepared', self.model_name, str(window_size), vowel + ".npz"))
-            #     self.prepared_data['train_x'][vowel], valid_test_x, self.prepared_data['train_y'][vowel], valid_test_y = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.4)
-            #     self.prepared_data['test_x'][vowel], self.prepared_data['valid_x'][vowel], self.prepared_data['test_y'][vowel], self.prepared_data['valid_y'][vowel] = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.5)
+            for vowel in LATIN_VOWELS:
+                prepared_data = np.load(os.path.join(self.res_path, 'prepared', self.model_name, str(window_size), vowel + ".npz"))
+                prepared_data['train_x'][vowel], valid_test_x, prepared_data['train_y'][vowel], valid_test_y = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.4)
+                prepared_data['test_x'][vowel], prepared_data['valid_x'][vowel], prepared_data['test_y'][vowel], prepared_data['valid_y'][vowel] = train_test_split(prepared_data['x'], prepared_data['y'], test_size=0.5)
         elif self.model_name == 'lstm_baseline':
             for vowel in LATIN_VOWELS:
                 prepared_data = np.load(os.path.join(self.res_path, 'prepared', self.model_name, str(window_size), vowel + ".npz"))

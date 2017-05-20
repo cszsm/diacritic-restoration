@@ -13,37 +13,41 @@ import argparse
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
 MODEL_PATH = '../models'
 
-def accentize(text, network_type, model_id):
+def accentize(text, network_type, units, window_size):
     if network_type == 'feedforward':
-        accentize_with_feedforward(text, model_id)
+        pass
+        # accentize_with_feedforward(text, model_id)
     if network_type == 'lstm_baseline':
-        return accentize_with_lstm_baseline(text, model_id)
+        return accentize_with_lstm_baseline(text, units, window_size)
 
-def accentize_with_feedforward(text, model_id):
-    windows = feedforward_preprocessor.FeedforwardPreprocessor.preprocess([text], 4)
-    accents = {}
+# def accentize_with_feedforward(text, model_id):
+#     windows = feedforward_preprocessor.FeedforwardPreprocessor.preprocess([text], 4)
+#     accents = {}
 
-    for vowel in VOWEL_TABLE.keys():
-        path = os.path.join(MODEL_PATH, 'feedforward', model_id, vowel + '.model')
+#     for vowel in VOWEL_TABLE.keys():
+#         path = os.path.join(MODEL_PATH, 'feedforward', model_id, vowel + '.model')
  
-        tf.reset_default_graph()
-        with tf.Session() as sess:
-            saver = tf.train.import_meta_graph(path + '.meta')
-            saver.restore(sess, path)
+#         tf.reset_default_graph()
+#         with tf.Session() as sess:
+#             saver = tf.train.import_meta_graph(path + '.meta')
+#             saver.restore(sess, path)
 
-            accents[vowel] = sess.run('output:0', feed_dict={'n_input:0': windows[vowel]})
+#             accents[vowel] = sess.run('output:0', feed_dict={'n_input:0': windows[vowel]})
 
-    accentized_text = accentize_with_accents(text, accents)
+#     accentized_text = accentize_with_accents(text, accents)
 
-    print('feedforward: ' + accentized_text)
+#     print('feedforward: ' + accentized_text)
     
 
-def accentize_with_lstm_baseline(text, model_id):
-    windows = lstm_baseline_preprocessor.LstmBaselinePreprocessor.preprocess([text], 1)
+def accentize_with_lstm_baseline(text, units, window_size):
+    windows = lstm_baseline_preprocessor.LstmBaselinePreprocessor.preprocess([text], window_size)
     accents = {}
 
     for vowel in VOWEL_TABLE.keys():
-        model = load_model(os.path.join(MODEL_PATH, 'lstm_baseline', model_id, vowel + '.model'))
+        if len(windows[vowel]) == 0:
+            continue
+
+        model = load_model(os.path.join(MODEL_PATH, 'lstm_baseline', units, str(window_size), vowel + '.model'))
         accents[vowel] = model.predict(np.array(windows[vowel]))
 
     accentized_text = accentize_with_accents(text, accents)
@@ -74,24 +78,38 @@ def accentize_with_accents(text, accents):
     return accentized_text
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--network_type', help='can be \'feedforward\' or \'lstm_baseline\'')
-parser.add_argument('--model_id')
-parser.add_argument('--text')
+# parser = argparse.ArgumentParser()
+# parser.add_argument('network_type', help='can be \'feedforward\' or \'lstm_baseline\'')
+# # parser.add_argument('--model_id')
+# parser.add_argument('units')
+# parser.add_argument('window_size')
+# parser.add_argument('text')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-if args.network_type is None or args.model_id is None or args.text is None:
-    print('Default accentizing')
+# if args.network_type is None or args.model_id is None or args.text is None:
+    # print('Default accentizing')
 
-    files = os.listdir(os.path.join(MODEL_PATH, 'feedforward'))
-    for f in files:
-        print(f)
-        accentize('arvizturo tukorfurogep', 'feedforward', f)
+    # files = os.listdir(os.path.join(MODEL_PATH, 'feedforward'))
+    # for f in files:
+    #     print(f)
+    #     accentize('arvizturo tukorfurogep', 'feedforward', f)
 
-    files = os.listdir(os.path.join(MODEL_PATH, 'lstm_baseline'))
-    for f in files:
-        print(f)
-        accentize('arvizturo tukorfurogep', 'lstm_baseline', f)
-else:
-    accentize(args.text, args.network_type, args.model_id)
+    # files = os.listdir(os.path.join(MODEL_PATH, 'lstm_baseline'))
+    # for f in files:
+    #     print(f)
+    #     accentize('arvizturo tukorfurogep', 'lstm_baseline', f)
+# else:
+
+
+# accentize(args.text, args.network_type, args.units, args.window_size)
+
+text = 'ekezetesites'
+
+accentize(text, 'lstm_baseline', '1', 1)
+accentize(text, 'lstm_baseline', '1', 2)
+accentize(text, 'lstm_baseline', '1', 3)
+
+accentize(text, 'lstm_baseline', '512', 1)
+accentize(text, 'lstm_baseline', '512', 2)
+accentize(text, 'lstm_baseline', '512', 3)

@@ -3,7 +3,7 @@ from sklearn.feature_extraction import DictVectorizer
 
 import numpy as np
 
-import preprocessor_common as common
+import preprocessor.preprocessor_common as common
 
 vowel_table = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
 vectorizer = DictVectorizer()

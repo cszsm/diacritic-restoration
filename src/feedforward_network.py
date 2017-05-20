@@ -24,8 +24,9 @@ class Network:
         self.n_input = tf.placeholder(tf.float32, [None, input_size], name='n_input')
         self.n_output = tf.placeholder(tf.float32, [None, output_size])
 
-        self.hidden_neurons = 100
-        self.hidden_neurons2 = 10
+        self.hidden_neurons = params['first']
+        self.hidden_neurons2 = params['second']
+        self.hidden_neurons3 = params['third']
 
         self.b_hidden = tf.Variable(tf.random_normal([self.hidden_neurons]), name='b_hidden')
         self.W_hidden = tf.Variable(tf.random_normal(
@@ -33,15 +34,32 @@ class Network:
         self.hidden = tf.sigmoid(
             tf.matmul(self.n_input, self.W_hidden) + self.b_hidden)
 
-        self.b_hidden2 = tf.Variable(tf.random_normal([self.hidden_neurons2]), name='b_hidden2')
-        self.W_hidden2 = tf.Variable(tf.random_normal(
-            [self.hidden_neurons, self.hidden_neurons2]), name='W_hidden2')
-        self.hidden2 = tf.sigmoid(
-            tf.matmul(self.hidden, self.W_hidden2) + self.b_hidden2)
+        if self.hidden_neurons2 != 0:
+            self.b_hidden2 = tf.Variable(tf.random_normal([self.hidden_neurons2]), name='b_hidden2')
+            self.W_hidden2 = tf.Variable(tf.random_normal(
+                [self.hidden_neurons, self.hidden_neurons2]), name='W_hidden2')
+            self.hidden2 = tf.sigmoid(
+                tf.matmul(self.hidden, self.W_hidden2) + self.b_hidden2)
 
-        self.W_output = tf.Variable(tf.random_normal(
-            [self.hidden_neurons2, output_size]), name='W_output')
-        self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output), name='output')
+        if self.hidden_neurons3 != 0:
+            self.b_hidden3 = tf.Variable(tf.random_normal([self.hidden_neurons3]), name='b_hidden3')
+            self.W_hidden3 = tf.Variable(tf.random_normal(
+                [self.hidden_neurons2, self.hidden_neurons3]), name='W_hidden3')
+            self.hidden3 = tf.sigmoid(
+                tf.matmul(self.hidden2, self.W_hidden3) + self.b_hidden3)
+
+        if self.hidden_neurons2 == 0:
+            self.W_output = tf.Variable(tf.random_normal(
+                [self.hidden_neurons, output_size]), name='W_output')
+            self.output = tf.nn.softmax(tf.matmul(self.hidden, self.W_output), name='output')
+        if self.hidden_neurons2 != 0 and self.hidden_neurons3 == 0:
+            self.W_output = tf.Variable(tf.random_normal(
+                [self.hidden_neurons2, output_size]), name='W_output')
+            self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output), name='output')
+        if self.hidden_neurons3 != 0:
+            self.W_output = tf.Variable(tf.random_normal(
+                [self.hidden_neurons3, output_size]), name='W_output')
+            self.output = tf.nn.softmax(tf.matmul(self.hidden3, self.W_output), name='output')
 
         self.cost = tf.reduce_mean(-tf.reduce_sum(self.n_output * tf.log(self.output), reduction_indices=[1]))
 
@@ -122,6 +140,21 @@ class Network:
     @staticmethod
     def get_exhaustive_parameters():
         params_list = []
+
+        for i in [10, 100]:
+            for j in [0, 10, 100]:
+                for k in [0, 10, 100]:
+
+                    if j == 0 and k != 0:
+                        continue
+
+                    params = {}
+                    params['first'] = i
+                    params['second'] = j
+                    params['third'] = k
+                    params_list.append(params)
+
+        return params_list
 
     @staticmethod
     def log_parameters(l, params):
