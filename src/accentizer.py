@@ -5,13 +5,13 @@ from keras.models import load_model
 import tensorflow as tf
 import numpy as np
 
-import preprocessor.feedforward_preprocessor as feedforward_preprocessor
-import preprocessor.lstm_baseline_preprocessor as lstm_baseline_preprocessor
+import src.preprocess.feedforward_preprocessor as feedforward_preprocessor
+import src.preprocess.lstm_baseline_preprocessor as lstm_baseline_preprocessor
 
 import argparse
 
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
-MODEL_PATH = '../models'
+MODEL_PATH = os.path.join('..', 'models')
 
 def accentize(text, network_type, units, window_size):
     if network_type == 'feedforward':
@@ -47,7 +47,7 @@ def accentize_with_lstm_baseline(text, units, window_size):
         if len(windows[vowel]) == 0:
             continue
 
-        model = load_model(os.path.join(MODEL_PATH, 'lstm_baseline', units, str(window_size), vowel + '.model'))
+        model = load_model(os.path.join(MODEL_PATH, 'lstm_baseline', str(units), str(window_size), vowel + '.model'))
         accents[vowel] = model.predict(np.array(windows[vowel]))
 
     accentized_text = accentize_with_accents(text, accents)
@@ -104,12 +104,14 @@ def accentize_with_accents(text, accents):
 
 # accentize(args.text, args.network_type, args.units, args.window_size)
 
-text = 'ekezetesites'
+# text = 'ekezetesites'
 
-accentize(text, 'lstm_baseline', '1', 1)
-accentize(text, 'lstm_baseline', '1', 2)
-accentize(text, 'lstm_baseline', '1', 3)
+# accentize(text, 'lstm_baseline', '1', 1)
+# accentize(text, 'lstm_baseline', '1', 2)
+# accentize(text, 'lstm_baseline', '1', 3)
 
-accentize(text, 'lstm_baseline', '512', 1)
-accentize(text, 'lstm_baseline', '512', 2)
-accentize(text, 'lstm_baseline', '512', 3)
+# accentize(text, 'lstm_baseline', '512', 1)
+# accentize(text, 'lstm_baseline', '512', 2)
+# accentize(text, 'lstm_baseline', '512', 3)
+
+# accentize(text, 'lstm_baseline', '1024', 4)

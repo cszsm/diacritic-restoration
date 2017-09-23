@@ -9,7 +9,7 @@ from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
 import keras.backend as K
-import preprocessor.lstm_baseline_preprocessor as preprocessor
+import src.preprocess.lstm_baseline_preprocessor as preprocessor
 
 from math import pow
 
@@ -112,13 +112,13 @@ class Network:
         params_list = []
 
         unit_counts = []
-        for i in range(10, 11):
+        for i in range(0, 11):
         # for i in range(0, 1):
             unit_counts.append(int(pow(2, i)))
 
         for unit_count in unit_counts:
-            # for window_size in range(1, 6):
-            for window_size in range(3, 4):
+            for window_size in range(1, 6):
+            # for window_size in range(4, 5):
                 params = {}
                 params['units'] = unit_count
                 params['window_size'] = window_size

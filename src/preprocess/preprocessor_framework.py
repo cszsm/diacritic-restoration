@@ -1,13 +1,13 @@
-import lstm_baseline_preprocessor
-import feedforward_preprocessor
+from src.preprocess import lstm_baseline_preprocessor
+from src.preprocess import feedforward_preprocessor
 
 import numpy as np
 import os.path
 
-import argparse
+# import argparse
 
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
-RESOURCE_DIRECTORY = '../../res/'
+RESOURCE_DIRECTORY = 'res'
 
 class PreprocessorFramework:
 
@@ -15,7 +15,7 @@ class PreprocessorFramework:
         self.preprocessor = preprocessor
 
     def read_corpus(self, vowel, count):
-        corpus = open(os.path.join(RESOURCE_DIRECTORY, "corpus"))
+        corpus = open(os.path.join(RESOURCE_DIRECTORY, "corpus"), encoding="utf8")
         words = []
         accent_counter = {}
 
@@ -63,6 +63,9 @@ class PreprocessorFramework:
                 words = self.read_corpus(vowel, count)
                 px, py = self.create_preprocessor(count, window_size, vowel).make_windows(words)
                 np.savez(self.create_path(window_size, vowel), x=px, y=py)
+                
+            file = open(os.path.join(RESOURCE_DIRECTORY, 'prepared', self.preprocessor, str(window_size), '_count.txt'), 'w')
+            file.write(str(count))
 
     def create_preprocessor(self, count, window_size, vowel):
         if self.preprocessor == 'lstm_baseline':
@@ -75,17 +78,17 @@ class PreprocessorFramework:
         os.makedirs(parent_path, exist_ok=True)
         return os.path.join(parent_path, vowel)
 
-parser = argparse.ArgumentParser()
-parser.add_argument("preprocessor")
-parser.add_argument("count")
-parser.add_argument("window_size")
-parser.add_argument("--vowel")
+# parser = argparse.ArgumentParser()
+# parser.add_argument("preprocessor")
+# parser.add_argument("count")
+# parser.add_argument("window_size")
+# parser.add_argument("--vowel")
 
-args = parser.parse_args()
-preprocessor = args.preprocessor
-count = int(args.count)
-window_size = int(args.window_size)
-vowel = args.vowel
+# args = parser.parse_args()
+# preprocessor = args.preprocessor
+# count = int(args.count)
+# window_size = int(args.window_size)
+# vowel = args.vowel
 
-framework = PreprocessorFramework(preprocessor)
-framework.process(count, window_size, vowel)
+# framework = PreprocessorFramework(preprocessor)
+# framework.process(count, window_size, vowel)

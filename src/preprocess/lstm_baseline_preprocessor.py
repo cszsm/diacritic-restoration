@@ -3,7 +3,7 @@ from collections import deque
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
 
-import preprocessor.preprocessor_common as common
+import src.preprocess.preprocessor_common as common
 
 VOWELS = "aáeéiíoóöőuúüű"
 VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
@@ -117,7 +117,7 @@ class LstmBaselinePreprocessor:
                 del normalized_list[window_size]
                 transformed_list = common.transform_list(normalized_list)
 
-                print(LstmBaselinePreprocessor.decode(transformed_list))
+                # print(LstmBaselinePreprocessor.decode(transformed_list))
 
                 windows.append(transformed_list)
 

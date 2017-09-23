@@ -1,13 +1,13 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-import feedforward_network
-import lstm_baseline_network
-import logger
+from src.train import feedforward_network
+from src.train  import lstm_baseline_network
+from src import logger
 
 import datetime
 import os.path
-import argparse
+# import argparse
 
 LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
 # LATIN_VOWELS = ['u']
@@ -24,7 +24,7 @@ class Framework:
 
         # self.log_path = '../logs/' + self.model_name
         self.model_path = '../models/' + self.model_name
-        self.res_path = '../res'
+        self.res_path = 'res'
 
         self.prepared_data = {}
         self.prepared_data['train_x'] = {}
@@ -77,9 +77,10 @@ class Framework:
     #             self.run_network(params, vowel, str(i))
 
 
-    def run(self):
-        """Runs networks with exhaustive parameters, each with all vowels."""
-        params_list = self.network.Network.get_exhaustive_parameters()
+    def run(self, params_list = None):
+        if params_list == None:
+            """Runs networks with exhaustive parameters, each with all vowels."""
+            params_list = self.network.Network.get_exhaustive_parameters()
 
         for params in params_list:
             if self.model_name == 'feedforward':
@@ -99,7 +100,7 @@ class Framework:
         filename = date
 
         i = 1
-        print('ezitt: ' + os.path.join(self.log_path, filename))
+        # print('ezitt: ' + os.path.join(self.log_path, filename))
         while(os.path.isfile(os.path.join(self.log_path, filename))):
             filename = date + "-" + str(i)
             i += 1
@@ -148,11 +149,11 @@ class Framework:
         """Saves the model."""
         model.save(os.path.join(self.model_path, self.filename + '_' + id, vowel + '.model'))
 
-parser = argparse.ArgumentParser()
-parser.add_argument('model', help='can be \'feedforward\' or \'lstm_baseline\'')
-# parser.add_argument('count', type=int)
+# parser = argparse.ArgumentParser()
+# parser.add_argument('model', help='can be \'feedforward\' or \'lstm_baseline\'')
+# # parser.add_argument('count', type=int)
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-framework = Framework(args.model)
-framework.run()
+# framework = Framework(args.model)
+# framework.run()
