@@ -46,7 +46,7 @@ class Network:
         self.logger.log('\nvowel: ' + self.vowel)
 
         early_stopping = EarlyStopping(monitor='loss', patience=0)
-        self.model.fit(train_x, train_y, batch_size=32, epochs=100, callbacks=[early_stopping], verbose=3)
+        self.model.fit(train_x, train_y, batch_size=32, epochs=100, callbacks=[early_stopping], verbose=3, validation_split=0.4)
         score = self.model.evaluate(test_x, test_y, batch_size=32)
 
         self.logger.log('loss: ' + str(score[0]))
