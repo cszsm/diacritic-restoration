@@ -23,6 +23,17 @@ az	a/ART
 mozgásban	mozgás/NOUN<CAS<INE>>
 .	./PUNCT
 
+A	a/ART
+lelki	lelki/ADJ
+betegségnek	betegség/NOUN<CAS<DAT>>
+is	is/ADV
+vannak	van/VERB<PLUR>
+kórokozói	kórokozó/NOUN<PLUR><POSS>
+,	,/PUNCT
+tünetei	tünet/NOUN<PLUR><POSS>
+&gt;	&gt;/PUNCT
+...	.../PUNCT
+
 Valószínűleg	valószínűleg/ADV
 fölösleges	fölösleges/ADJ
 részletezni	részletez/VERB<INF>
