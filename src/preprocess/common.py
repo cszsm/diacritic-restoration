@@ -6,15 +6,17 @@ LABEL_ENC = LabelEncoder()
 ONEHOT_ENC = OneHotEncoder(sparse=False)
 
 def deaccentize(text):
-    text = text.replace("á", "a")
-    text = text.replace("é", "e")
-    text = text.replace("í", "i")
-    text = text.replace("ó", "o")
-    text = text.replace("ö", "o")
-    text = text.replace("ő", "o")
-    text = text.replace("ú", "u")
-    text = text.replace("ü", "u")
-    text = text.replace("ű", "u")
+    '''Removes diacritics from hungarian text'''
+
+    text = text.replace('á', 'a')
+    text = text.replace('é', 'e')
+    text = text.replace('í', 'i')
+    text = text.replace('ó', 'o')
+    text = text.replace('ö', 'o')
+    text = text.replace('ő', 'o')
+    text = text.replace('ú', 'u')
+    text = text.replace('ü', 'u')
+    text = text.replace('ű', 'u')
 
     return text
 
@@ -42,7 +44,7 @@ def isalpha(c):
 
 
 def normalize_character(c):
-    """reduces the number of different characters to 39"""
+    '''Reduces the number of different characters to 39'''
     if c.isspace():
         return ' '
     if c.isdigit():
@@ -71,7 +73,7 @@ def normalize_text(text):
     return normalized_text
 
 def fit_encoders():
-    alphabet = "abcdefghijklmnopqrstuvwxyz 0_*"
+    alphabet = 'abcdefghijklmnopqrstuvwxyz 0_*'
     alphabet_list = list(alphabet)
     
     LABEL_ENC.fit(alphabet_list)
@@ -113,3 +115,18 @@ def pad_word(word, window_size):
     if window_size > 0:
         return '_' + pad_word(word, window_size - 1) + '_'
     return word
+
+
+
+def tag_character(character):
+    '''Used for sequence tagging'''
+
+    if character in "aeiou":
+        return [0, 1, 0, 0, 0]
+    if character in "áéíóú":
+        return [0, 0, 1, 0, 0]
+    if character in "öü":
+        return [0, 0, 0, 1, 0]
+    if character in "őű":
+        return [0, 0, 0, 0, 1]
+    return [1, 0, 0, 0, 0]
