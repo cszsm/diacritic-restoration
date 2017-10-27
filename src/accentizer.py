@@ -1,17 +1,27 @@
-import os
+# import os
 import os.path
 
 from keras.models import load_model
-import tensorflow as tf
+# import tensorflow as tf
 import numpy as np
 
-import src.preprocess.feedforward_preprocessor as feedforward_preprocessor
+# import src.preprocess.feedforward_preprocessor as feedforward_preprocessor
 import src.preprocess.lstm_baseline_preprocessor as lstm_baseline_preprocessor
+from src.preprocess.lstm_sequence_tagging import process_for_train
 
-import argparse
+from src.preprocess import common
 
-VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
-MODEL_PATH = os.path.join('..', 'models')
+# import argparse
+
+VOWEL_TABLE = {
+    'a': ['a', 'á'],
+    'e': ['e', 'é'],
+    'i': ['i', 'í'],
+    'o': ['o', 'ó', 'ö', 'ő'],
+    'u': ['u', 'ú', 'ü', 'ű']
+}
+MODEL_PATH = os.path.join('models')
+
 
 def accentize(text, network_type, units, window_size):
     if network_type == 'feedforward':
@@ -20,13 +30,14 @@ def accentize(text, network_type, units, window_size):
     if network_type == 'lstm_baseline':
         return accentize_with_lstm_baseline(text, units, window_size)
 
+
 # def accentize_with_feedforward(text, model_id):
 #     windows = feedforward_preprocessor.FeedforwardPreprocessor.preprocess([text], 4)
 #     accents = {}
 
 #     for vowel in VOWEL_TABLE.keys():
 #         path = os.path.join(MODEL_PATH, 'feedforward', model_id, vowel + '.model')
- 
+
 #         tf.reset_default_graph()
 #         with tf.Session() as sess:
 #             saver = tf.train.import_meta_graph(path + '.meta')
@@ -37,24 +48,27 @@ def accentize(text, network_type, units, window_size):
 #     accentized_text = accentize_with_accents(text, accents)
 
 #     print('feedforward: ' + accentized_text)
-    
+
 
 def accentize_with_lstm_baseline(text, units, window_size):
-    windows = lstm_baseline_preprocessor.LstmBaselinePreprocessor.preprocess([text], window_size)
+    windows = lstm_baseline_preprocessor.LstmBaselinePreprocessor.preprocess(
+        [text], window_size)
     accents = {}
 
     for vowel in VOWEL_TABLE.keys():
         if len(windows[vowel]) == 0:
             continue
 
-        model = load_model(os.path.join(MODEL_PATH, 'lstm_baseline', str(units), str(window_size), vowel + '.model'))
+        model = load_model(
+            os.path.join(MODEL_PATH, 'lstm_baseline',
+                         str(units), str(window_size), vowel + '.model'))
         accents[vowel] = model.predict(np.array(windows[vowel]))
 
     accentized_text = accentize_with_accents(text, accents)
 
     print('lstm_baseline: ' + accentized_text)
 
-        
+
 def decode_accent(vowel, coded_accent):
     '''Returns the vowel corresponding to the one-hot encoded vowel'''
     i = np.array(coded_accent).argmax(axis=0)
@@ -78,40 +92,40 @@ def accentize_with_accents(text, accents):
     return accentized_text
 
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('network_type', help='can be \'feedforward\' or \'lstm_baseline\'')
-# # parser.add_argument('--model_id')
-# parser.add_argument('units')
-# parser.add_argument('window_size')
-# parser.add_argument('text')
+def accentize_with_lstm_sequence_tagging(text):
 
-# args = parser.parse_args()
+    sentence_length = len(text)
+    if sentence_length <= 600:
 
-# if args.network_type is None or args.model_id is None or args.text is None:
-    # print('Default accentizing')
+        d = 600 - sentence_length
+        for i in range(d):
+            text += '_'
 
-    # files = os.listdir(os.path.join(MODEL_PATH, 'feedforward'))
-    # for f in files:
-    #     print(f)
-    #     accentize('arvizturo tukorfurogep', 'feedforward', f)
+    characters, _ = process_for_train([text])
 
-    # files = os.listdir(os.path.join(MODEL_PATH, 'lstm_baseline'))
-    # for f in files:
-    #     print(f)
-    #     accentize('arvizturo tukorfurogep', 'lstm_baseline', f)
-# else:
+    path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
+    model = load_model(path)
+    accents = model.predict(np.array(characters))
 
+    # predictions to print
+    preds_to_print = accents[0][:20]
+    # rounded_preds = [
+    #     list(map(lambda x: round(x, 2), pred)) for pred in preds_to_print
+    # ]
+    # for pred in rounded_preds:
+    #     print(pred)
+    rounded_preds = np.around(preds_to_print, 2)
+    print(rounded_preds)
+    # print(preds_to_print)
 
-# accentize(args.text, args.network_type, args.units, args.window_size)
+    accentized_sentence = ''
+    accent_tags = ''
 
-# text = 'ekezetesites'
+    for i in range(sentence_length):
+        accent_tag = np.array(accents[0][i]).argmax(axis=0)
+        accent_tags += str(accent_tag)
+        accentized_character = common.accentize_by_tag(text[i], accent_tag)
+        accentized_sentence += accentized_character
 
-# accentize(text, 'lstm_baseline', '1', 1)
-# accentize(text, 'lstm_baseline', '1', 2)
-# accentize(text, 'lstm_baseline', '1', 3)
-
-# accentize(text, 'lstm_baseline', '512', 1)
-# accentize(text, 'lstm_baseline', '512', 2)
-# accentize(text, 'lstm_baseline', '512', 3)
-
-# accentize(text, 'lstm_baseline', '1024', 4)
+    print(accent_tags)
+    return accentized_sentence

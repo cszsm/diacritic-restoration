@@ -1,9 +1,12 @@
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
+import numpy as np
+
 ALPHABET = "aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz"
 
 LABEL_ENC = LabelEncoder()
 ONEHOT_ENC = OneHotEncoder(sparse=False)
+
 
 def deaccentize(text):
     '''Removes diacritics from hungarian text'''
@@ -20,6 +23,7 @@ def deaccentize(text):
 
     return text
 
+
 def deaccentize_list(character_list):
     deaccentized_list = []
 
@@ -27,6 +31,7 @@ def deaccentize_list(character_list):
         deaccentized_list += deaccentize(character)
 
     return deaccentized_list
+
 
 def ispunct(c):
     punctuations = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
@@ -55,6 +60,7 @@ def normalize_character(c):
         return c
     return '*'
 
+
 def normalize_list(character_list):
     normalized_list = []
 
@@ -72,10 +78,11 @@ def normalize_text(text):
 
     return normalized_text
 
+
 def fit_encoders():
     alphabet = 'abcdefghijklmnopqrstuvwxyz 0_*'
     alphabet_list = list(alphabet)
-    
+
     LABEL_ENC.fit(alphabet_list)
     label_list = LABEL_ENC.transform(alphabet_list)
     ONEHOT_ENC.fit(label_list.reshape(-1, 1))
@@ -117,16 +124,33 @@ def pad_word(word, window_size):
     return word
 
 
-
 def tag_character(character):
     '''Used for sequence tagging'''
 
-    if character in "aeiou":
+    if character in 'aeiou':
         return [0, 1, 0, 0, 0]
-    if character in "áéíóú":
+    if character in 'áéíóú':
         return [0, 0, 1, 0, 0]
-    if character in "öü":
+    if character in 'öü':
         return [0, 0, 0, 1, 0]
-    if character in "őű":
+    if character in 'őű':
         return [0, 0, 0, 0, 1]
     return [1, 0, 0, 0, 0]
+
+
+def accentize_by_tag(character, tag):
+    '''Used for sequence tagging'''
+
+    # TODO
+    accents_1 = {'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú'}
+    accents_2 = {'o': 'ö', 'u': 'ü'}
+    accents_3 = {'o': 'ő', 'u': 'ű'}
+
+    # TODO argmax?
+    if tag is 2:
+        return accents_1[character]
+    if tag is 3:
+        return accents_2[character]
+    if tag is 4:
+        return accents_3[character]
+    return character

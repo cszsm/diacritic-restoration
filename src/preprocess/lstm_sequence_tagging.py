@@ -2,6 +2,7 @@
 from src.preprocess.common import tag_character, normalize_character, deaccentize
 from src.preprocess.common import fit_encoders, transform
 
+
 def process_for_train(sentences):
     '''Processes the given sentences'''
 
@@ -11,12 +12,17 @@ def process_for_train(sentences):
     tags_by_sentences = []
 
     for sentence in sentences:
+
+        if len(characters_by_sentences) % 100 is 0:
+            print('processed: ' + str(len(characters_by_sentences)))
+
         characters, tags = process_sentence(sentence)
 
         characters_by_sentences.append(characters)
         tags_by_sentences.append(tags)
 
     return characters_by_sentences, tags_by_sentences
+
 
 def process_sentence(sentence):
     '''Encodes the characters of the sentence and create tags for all characters'''

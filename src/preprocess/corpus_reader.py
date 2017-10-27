@@ -1,13 +1,20 @@
 import os.path
 
-VOWEL_TABLE = {'a': ['a', 'á'], 'e': ['e', 'é'], 'i': ['i', 'í'], 'o': ['o', 'ó', 'ö', 'ő'], 'u': ['u', 'ú', 'ü', 'ű']}
+VOWEL_TABLE = {
+    'a': ['a', 'á'],
+    'e': ['e', 'é'],
+    'i': ['i', 'í'],
+    'o': ['o', 'ó', 'ö', 'ő'],
+    'u': ['u', 'ú', 'ü', 'ű']
+}
 RESOURCE_DIRECTORY = 'res'
 
-class CorpusReader:
 
+class CorpusReader:
     @staticmethod
     def read_words(vowel, count):
-        corpus = open(os.path.join(RESOURCE_DIRECTORY, "corpus"), encoding="utf8")
+        corpus = open(
+            os.path.join(RESOURCE_DIRECTORY, "corpus"), encoding="utf8")
         words = []
         accent_counter = {}
 
@@ -46,9 +53,9 @@ class CorpusReader:
 
     @staticmethod
     def read_sentences(count):
-        with open(os.path.join('res', 'testcorpus'), encoding="utf8") as corpus:
+        with open(os.path.join('res', 'corpus'), encoding="utf8") as corpus:
 
-            sentence_counter = 0
+            # sentence_counter = 0
             sentence = ''
             sentences = []
             # sentence_lengths = []
@@ -65,22 +72,35 @@ class CorpusReader:
                 if line == '\n':
                     # print(sentence + '\n')
 
-                    sentences.append(sentence)
+                    sentence_length = len(sentence)
+                    if sentence_length <= 600:
+
+                        d = 600 - sentence_length
+                        for i in range(d):
+                            sentence += '_'
+
+                        sentences.append(sentence)
+                        # sentence_counter += 1
+
                     # sentence_lengths.append(len(sentence))
                     sentence = ''
-                    
+
                     space_before_flag = False
 
-                    sentence_counter += 1
-                    if sentence_counter >= count:
-                        break
+                    prepared_count = len(sentences)
+                    # if sentence_counter >= count:
+                    if prepared_count % 100 is 0:
+                        print('read: ' + str(prepared_count))
+
+                    if prepared_count >= count:
+                        return sentences
 
                     continue
-                
+
                 parts = line.split(maxsplit=1)
                 if len(parts) < 2:
                     continue
-                
+
                 word, tag = parts
 
                 # deciding where space should be added
@@ -105,4 +125,5 @@ class CorpusReader:
 
                 sentence += word
 
+            print('ERROR: Not enough sentences in the corpus')
             return sentences
