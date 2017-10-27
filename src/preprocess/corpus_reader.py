@@ -51,79 +51,79 @@ class CorpusReader:
         print("ERROR: Corpus has run out of words!")
         return words
 
-    @staticmethod
-    def read_sentences(count):
-        with open(os.path.join('res', 'corpus'), encoding="utf8") as corpus:
 
-            # sentence_counter = 0
-            sentence = ''
-            sentences = []
-            # sentence_lengths = []
+def read_sentences(count):
+    with open(os.path.join('res', 'corpus'), encoding="utf8") as corpus:
 
-            # true if the current word is in a quote
-            quotation_flag = False
-            # true if there should be space before the current word
-            space_before_flag = False
-            # true if there should be space after the current word
-            space_after_flag = True
+        # sentence_counter = 0
+        sentence = ''
+        sentences = []
+        # sentence_lengths = []
 
-            for line in corpus:
+        # true if the current word is in a quote
+        quotation_flag = False
+        # true if there should be space before the current word
+        space_before_flag = False
+        # true if there should be space after the current word
+        space_after_flag = True
 
-                if line == '\n':
-                    # print(sentence + '\n')
+        for line in corpus:
 
-                    sentence_length = len(sentence)
-                    if sentence_length <= 600:
+            if line == '\n':
+                # print(sentence + '\n')
 
-                        d = 600 - sentence_length
-                        for i in range(d):
-                            sentence += '_'
+                sentence_length = len(sentence)
+                if sentence_length <= 600:
 
-                        sentences.append(sentence)
-                        # sentence_counter += 1
+                    d = 600 - sentence_length
+                    for i in range(d):
+                        sentence += '_'
 
-                    # sentence_lengths.append(len(sentence))
-                    sentence = ''
+                    sentences.append(sentence)
+                    # sentence_counter += 1
 
+                # sentence_lengths.append(len(sentence))
+                sentence = ''
+
+                space_before_flag = False
+
+                prepared_count = len(sentences)
+                # if sentence_counter >= count:
+                if prepared_count % 100 is 0:
+                    print('read: ' + str(prepared_count))
+
+                if prepared_count >= count:
+                    return sentences
+
+                continue
+
+            parts = line.split(maxsplit=1)
+            if len(parts) < 2:
+                continue
+
+            word, tag = parts
+
+            # deciding where space should be added
+            if 'PUNCT' in tag:
+                if word is '"':
+                    if quotation_flag:
+                        quotation_flag = False
+                        space_before_flag = False
+                    else:
+                        quotation_flag = True
+                        space_after_flag = False
+                elif word in '.,);:':
                     space_before_flag = False
 
-                    prepared_count = len(sentences)
-                    # if sentence_counter >= count:
-                    if prepared_count % 100 is 0:
-                        print('read: ' + str(prepared_count))
+            # adding space before the current word
+            if space_before_flag:
+                sentence += ' '
+                space_before_flag = space_after_flag
+                space_after_flag = True
+            else:
+                space_before_flag = True
 
-                    if prepared_count >= count:
-                        return sentences
+            sentence += word
 
-                    continue
-
-                parts = line.split(maxsplit=1)
-                if len(parts) < 2:
-                    continue
-
-                word, tag = parts
-
-                # deciding where space should be added
-                if 'PUNCT' in tag:
-                    if word is '"':
-                        if quotation_flag:
-                            quotation_flag = False
-                            space_before_flag = False
-                        else:
-                            quotation_flag = True
-                            space_after_flag = False
-                    elif word in '.,);:':
-                        space_before_flag = False
-
-                # adding space before the current word
-                if space_before_flag:
-                    sentence += ' '
-                    space_before_flag = space_after_flag
-                    space_after_flag = True
-                else:
-                    space_before_flag = True
-
-                sentence += word
-
-            print('ERROR: Not enough sentences in the corpus')
-            return sentences
+        print('ERROR: Not enough sentences in the corpus')
+        return sentences

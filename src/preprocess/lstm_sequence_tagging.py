@@ -1,31 +1,47 @@
-'''Preprocess data for the sequence tagging lstm network'''
-from src.preprocess.common import tag_character, normalize_character, deaccentize
-from src.preprocess.common import fit_encoders, transform
+'''
+Preprocess data for the sequence tagging lstm network
+'''
+
+from src.preprocess.common import normalize_character, deaccentize
+from src.preprocess.character_encoder import EnglishEncoder, HungarianEncoder
+
+import time
 
 
-def process_for_train(sentences):
+def process(sentences):
     '''Processes the given sentences'''
 
-    fit_encoders()
+    english_encoder = EnglishEncoder()
+    hungarian_encoder = HungarianEncoder()
 
     characters_by_sentences = []
     tags_by_sentences = []
 
+    start_time = time.perf_counter()
+
     for sentence in sentences:
 
-        if len(characters_by_sentences) % 100 is 0:
-            print('processed: ' + str(len(characters_by_sentences)))
-
-        characters, tags = process_sentence(sentence)
+        characters, tags = _process_sentence(sentence, english_encoder,
+                                             hungarian_encoder)
 
         characters_by_sentences.append(characters)
         tags_by_sentences.append(tags)
 
+        if len(characters_by_sentences) % 100 == 0:
+
+            current_time = time.perf_counter()
+            elapsed_time = current_time - start_time
+
+            print('processed: ' + str(len(characters_by_sentences)) +
+                  '\telapsed time: ' + str(elapsed_time) + 's')
+
+            start_time = current_time
+
     return characters_by_sentences, tags_by_sentences
 
 
-def process_sentence(sentence):
-    '''Encodes the characters of the sentence and create tags for all characters'''
+def _process_sentence(sentence, english_encoder, hungarian_encoder):
+    '''Normalizes, deaccents, encodes the sentence and create tags for all characters'''
 
     characters = []
     tags = []
@@ -34,9 +50,9 @@ def process_sentence(sentence):
 
         normalized = normalize_character(character.lower())
         deaccented = deaccentize(normalized)
-        encoded = transform(deaccented)
+        encoded = english_encoder.transform(deaccented)
 
-        tag = tag_character(normalized)
+        tag = hungarian_encoder.transform(normalized)
 
         characters.append(encoded)
         tags.append(tag)

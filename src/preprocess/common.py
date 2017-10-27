@@ -79,6 +79,7 @@ def normalize_text(text):
     return normalized_text
 
 
+# TODO deprecated
 def fit_encoders():
     alphabet = 'abcdefghijklmnopqrstuvwxyz 0_*'
     alphabet_list = list(alphabet)

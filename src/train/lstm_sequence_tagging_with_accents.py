@@ -10,8 +10,8 @@ class Network:
 
         self.model = Sequential()
         self.model.add(LSTM(100, input_shape=(600, 30), return_sequences=True))
-        self.model.add(LSTM(100, return_sequences=True))
-        self.model.add(Dense(39))
+        self.model.add(LSTM(10, return_sequences=True))
+        self.model.add(Dense(5))
         self.model.add(Activation('sigmoid'))
 
         self.model.compile(
