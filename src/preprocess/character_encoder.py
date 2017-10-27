@@ -1,29 +1,20 @@
+'''Encoders for transforming characters to onehots'''
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-
-# ENGLISH_ALPHABET = list('abcdefghijklmnopqrstuvwxyz 0_*')
-# HUNGARIAN_ALPHABET = list('aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz 0_*')
 
 
 class _Encoder:
+    def __init__(self, alphabet):
 
-    label_encoder = LabelEncoder()
-    onehot_encoder = OneHotEncoder(sparse=False)
+        self.label_encoder = LabelEncoder()
+        self.onehot_encoder = OneHotEncoder(sparse=False)
 
-    alphabet = []
+        self.label_encoder.fit(alphabet)
 
-    def __init__(self):
-
-        # if alphabet is 'english':
-        #     self.label_encoder.fit(ENGLISH_ALPHABET)
-        # elif alphabet is 'hungarian':
-        #     self.label_encoder.fit(HUNGARIAN_ALPHABET)
-
-        self.label_encoder.fit(self.alphabet)
-
-        labels = self.label_encoder.transform(self.alphabet)
+        labels = self.label_encoder.transform(alphabet)
         self.onehot_encoder.fit(labels.reshape(-1, 1))
 
     def transform(self, character):
+        '''Transforms a character to onehot'''
 
         label = self.label_encoder.transform([character])[0]
         onehot = self.onehot_encoder.transform(label)[0]
@@ -32,10 +23,14 @@ class _Encoder:
 
 
 class EnglishEncoder(_Encoder):
+    '''Encoder for letters without diacritics'''
 
-    alphabet = list('abcdefghijklmnopqrstuvwxyz 0_*')
+    def __init__(self):
+        super().__init__(list('abcdefghijklmnopqrstuvwxyz 0_*'))
 
 
 class HungarianEncoder(_Encoder):
+    '''Encoder for letters with hungarian diacritics'''
 
-    alphabet = list('aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz 0_*')
+    def __init__(self):
+        super().__init__(list('aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz 0_*'))
