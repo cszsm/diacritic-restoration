@@ -1,6 +1,6 @@
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+import os.path
 
-import numpy as np
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 ALPHABET = "aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz"
 
@@ -155,3 +155,14 @@ def accentize_by_tag(character, tag):
     if tag is 4:
         return accents_3[character]
     return character
+
+
+def create_resource_path(*args):
+    '''Makes the directories in the 'prepared' directory for the path given with arguments'''
+
+    path = os.path.join('res', 'prepared')
+    for arg in args:
+        path = os.path.join(path, str(arg))
+
+    os.makedirs(path, exist_ok=True)
+    return path

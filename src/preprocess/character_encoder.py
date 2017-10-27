@@ -1,4 +1,5 @@
 '''Encoders for transforming characters to onehots'''
+import numpy as np
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
@@ -20,6 +21,14 @@ class _Encoder:
         onehot = self.onehot_encoder.transform(label)[0]
 
         return onehot
+
+    def inverse_transform(self, onehot):
+        '''Transforms onehot back to original character'''
+
+        label = np.array(onehot).argmax(axis=0)
+        character = self.label_encoder.inverse_transform(label)
+
+        return character
 
 
 class EnglishEncoder(_Encoder):
