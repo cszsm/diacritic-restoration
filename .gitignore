@@ -92,3 +92,4 @@ ENV/
 /logs
 /models
 /res/prepared/*
+!*.py

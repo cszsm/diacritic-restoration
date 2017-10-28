@@ -197,6 +197,9 @@ class Framework:
                     vowel], prepared['test_y'][vowel], prepared['valid_y'][
                         vowel] = train_test_split(
                             valid_test_x, valid_test_y, test_size=0.5)
+
+                print('____________________________________')
+                print(len(prepared['train_x'][vowel]))
         elif self.model_name == 'lstm_baseline':
             for vowel in LATIN_VOWELS:
                 prepared_data = np.load(

@@ -6,7 +6,6 @@ import random
 
 
 class Network:
-
     def __init__(self, params, vowel, logger):
 
         self.vowel = vowel
@@ -21,47 +20,61 @@ class Network:
 
         tf.reset_default_graph()
 
-        self.n_input = tf.placeholder(tf.float32, [None, input_size], name='n_input')
+        self.n_input = tf.placeholder(
+            tf.float32, [None, input_size], name='n_input')
         self.n_output = tf.placeholder(tf.float32, [None, output_size])
 
         self.hidden_neurons = params['first']
         self.hidden_neurons2 = params['second']
         self.hidden_neurons3 = params['third']
 
-        self.b_hidden = tf.Variable(tf.random_normal([self.hidden_neurons]), name='b_hidden')
-        self.W_hidden = tf.Variable(tf.random_normal(
-            [input_size, self.hidden_neurons]), name='W_hidden')
+        self.b_hidden = tf.Variable(
+            tf.random_normal([self.hidden_neurons]), name='b_hidden')
+        self.W_hidden = tf.Variable(
+            tf.random_normal([input_size, self.hidden_neurons]),
+            name='W_hidden')
         self.hidden = tf.sigmoid(
             tf.matmul(self.n_input, self.W_hidden) + self.b_hidden)
 
         if self.hidden_neurons2 != 0:
-            self.b_hidden2 = tf.Variable(tf.random_normal([self.hidden_neurons2]), name='b_hidden2')
-            self.W_hidden2 = tf.Variable(tf.random_normal(
-                [self.hidden_neurons, self.hidden_neurons2]), name='W_hidden2')
+            self.b_hidden2 = tf.Variable(
+                tf.random_normal([self.hidden_neurons2]), name='b_hidden2')
+            self.W_hidden2 = tf.Variable(
+                tf.random_normal([self.hidden_neurons, self.hidden_neurons2]),
+                name='W_hidden2')
             self.hidden2 = tf.sigmoid(
                 tf.matmul(self.hidden, self.W_hidden2) + self.b_hidden2)
 
         if self.hidden_neurons3 != 0:
-            self.b_hidden3 = tf.Variable(tf.random_normal([self.hidden_neurons3]), name='b_hidden3')
-            self.W_hidden3 = tf.Variable(tf.random_normal(
-                [self.hidden_neurons2, self.hidden_neurons3]), name='W_hidden3')
+            self.b_hidden3 = tf.Variable(
+                tf.random_normal([self.hidden_neurons3]), name='b_hidden3')
+            self.W_hidden3 = tf.Variable(
+                tf.random_normal([self.hidden_neurons2, self.hidden_neurons3]),
+                name='W_hidden3')
             self.hidden3 = tf.sigmoid(
                 tf.matmul(self.hidden2, self.W_hidden3) + self.b_hidden3)
 
         if self.hidden_neurons2 == 0:
-            self.W_output = tf.Variable(tf.random_normal(
-                [self.hidden_neurons, output_size]), name='W_output')
-            self.output = tf.nn.softmax(tf.matmul(self.hidden, self.W_output), name='output')
+            self.W_output = tf.Variable(
+                tf.random_normal([self.hidden_neurons, output_size]),
+                name='W_output')
+            self.output = tf.nn.softmax(
+                tf.matmul(self.hidden, self.W_output), name='output')
         if self.hidden_neurons2 != 0 and self.hidden_neurons3 == 0:
-            self.W_output = tf.Variable(tf.random_normal(
-                [self.hidden_neurons2, output_size]), name='W_output')
-            self.output = tf.nn.softmax(tf.matmul(self.hidden2, self.W_output), name='output')
+            self.W_output = tf.Variable(
+                tf.random_normal([self.hidden_neurons2, output_size]),
+                name='W_output')
+            self.output = tf.nn.softmax(
+                tf.matmul(self.hidden2, self.W_output), name='output')
         if self.hidden_neurons3 != 0:
-            self.W_output = tf.Variable(tf.random_normal(
-                [self.hidden_neurons3, output_size]), name='W_output')
-            self.output = tf.nn.softmax(tf.matmul(self.hidden3, self.W_output), name='output')
+            self.W_output = tf.Variable(
+                tf.random_normal([self.hidden_neurons3, output_size]),
+                name='W_output')
+            self.output = tf.nn.softmax(
+                tf.matmul(self.hidden3, self.W_output), name='output')
 
-        self.cost = tf.reduce_mean(-tf.reduce_sum(self.n_output * tf.log(self.output), reduction_indices=[1]))
+        self.cost = tf.reduce_mean(-tf.reduce_sum(
+            self.n_output * tf.log(self.output), reduction_indices=[1]))
 
         self.optimizer = tf.train.AdamOptimizer()
         self.train = self.optimizer.minimize(self.cost)
@@ -91,18 +104,48 @@ class Network:
             batch_x, batch_y = self.next_batch(train_x, train_y, 100)
 
             if hidden == 1:
-                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+                cvalues = self.sess.run(
+                    [
+                        self.train, self.cost, self.W_hidden, self.b_hidden,
+                        self.W_output
+                    ],
+                    feed_dict={
+                        self.n_input: batch_x,
+                        self.n_output: batch_y
+                    })
             elif hidden == 2:
-                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+                cvalues = self.sess.run(
+                    [
+                        self.train, self.cost, self.W_hidden, self.b_hidden,
+                        self.W_hidden2, self.b_hidden2, self.W_output
+                    ],
+                    feed_dict={
+                        self.n_input: batch_x,
+                        self.n_output: batch_y
+                    })
             else:
-                cvalues = self.sess.run([self.train, self.cost, self.W_hidden, self.b_hidden, self.W_hidden2, self.b_hidden2, self.W_hidden3, self.b_hidden3, self.W_output], feed_dict={self.n_input: batch_x, self.n_output: batch_y})
+                cvalues = self.sess.run(
+                    [
+                        self.train, self.cost, self.W_hidden, self.b_hidden,
+                        self.W_hidden2, self.b_hidden2, self.W_hidden3,
+                        self.b_hidden3, self.W_output
+                    ],
+                    feed_dict={
+                        self.n_input: batch_x,
+                        self.n_output: batch_y
+                    })
 
             # early stopping
             if i % 50 == 0:
                 last_loss = cvalues[1]
                 losses += [last_loss]
 
-                vcost = self.sess.run(self.cost, feed_dict={self.n_input: valid_x, self.n_output: valid_y})
+                vcost = self.sess.run(
+                    self.cost,
+                    feed_dict={
+                        self.n_input: valid_x,
+                        self.n_output: valid_y
+                    })
                 vlosses += [vcost]
 
                 if vcost < best_loss:
@@ -125,18 +168,20 @@ class Network:
             last_loss = cvalues[1]
 
         print("")
-        print("elapsed time: " + self.convert_time(time.perf_counter() - start_time))
+        print("elapsed time: " +
+              self.convert_time(time.perf_counter() - start_time))
         print("best loss: " + str(best_loss))
 
         result = self.sess.run(self.output, feed_dict={self.n_input: test_x})
-            
+
         success = 0
 
         for i in range(len(result)):
             if np.array_equal(decide(result[i], self.vowel), test_y[i]):
                 success += 1
-                
-        self.logger.log("accuracy (" + str(last_loss) + "): " + str(success / len(result)))
+
+        self.logger.log("accuracy (" + str(last_loss) + "): " + str(
+            success / len(result)))
 
     def get_model(self):
         return self.sess
@@ -169,7 +214,7 @@ class Network:
                     params['first'] = i
                     params['second'] = j
                     params['third'] = k
-                    
+
                     if j == 0 and k == 0:
                         params['hidden'] = 1
                     elif k == 0:
@@ -189,12 +234,13 @@ class Network:
 
     def next_batch(self, data_x, data_y, count):
         batch_x, batch_y = [], []
+
         indexes = random.sample(range(len(data_x)), count)
-        
+
         for i in indexes:
             batch_x.append(data_x[i])
             batch_y.append(data_y[i])
-            
+
         return batch_x, batch_y
 
     def convert_time(self, time):
@@ -202,9 +248,10 @@ class Network:
         s, ms = divmod(s, 1)
 
         return "%02d:%02d:%04d" % (m, s, ms * 1000)
-                
+
+
 def decide(y, vowel):
-    if(vowel in "aei"):
+    if (vowel in "aei"):
         tmp = [0, 0]
     else:
         tmp = [0, 0, 0, 0]
