@@ -89,12 +89,12 @@ class _Preprocessor:
             else:
                 for transformed_window in transformed_windows:
                     processed_windows = np.concatenate(
-                        processed_windows, transformed_window.toarray())
+                        (processed_windows, transformed_window.toarray()))
             processed_accents += accent_classes
 
             word_counter.increase(self.accent_count)
 
-            return processed_windows, processed_accents
+        return processed_windows, processed_accents
 
     def _process_word(self, word):
         windows = []
