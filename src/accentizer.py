@@ -2,7 +2,7 @@
 import os.path
 
 from keras.models import load_model
-# import tensorflow as tf
+import tensorflow as tf
 import numpy as np
 
 # import src.preprocess.feedforward_preprocessor as feedforward_preprocessor
@@ -12,6 +12,8 @@ from src.preprocess.lstm_sequence_tagging import process
 from src.preprocess import common
 
 from src.preprocess.character_encoder import HungarianEncoder
+
+from src.preprocess.feedforward import process_for_accentize
 
 # import argparse
 
@@ -33,23 +35,30 @@ def accentize(text, network_type, units, window_size):
         return accentize_with_lstm_baseline(text, units, window_size)
 
 
-# def accentize_with_feedforward(text, model_id):
-#     windows = feedforward_preprocessor.FeedforwardPreprocessor.preprocess([text], 4)
-#     accents = {}
+def accentize_with_feedforward(text, args):
+    windows = process_for_accentize(4, [text])
+    accents = {}
 
-#     for vowel in VOWEL_TABLE.keys():
-#         path = os.path.join(MODEL_PATH, 'feedforward', model_id, vowel + '.model')
+    for vowel in VOWEL_TABLE.keys():
 
-#         tf.reset_default_graph()
-#         with tf.Session() as sess:
-#             saver = tf.train.import_meta_graph(path + '.meta')
-#             saver.restore(sess, path)
+        if len(windows[vowel]) == 0:
+            continue
 
-#             accents[vowel] = sess.run('output:0', feed_dict={'n_input:0': windows[vowel]})
+        path = os.path.join(MODEL_PATH, 'feedforward', args, vowel + '.model')
 
-#     accentized_text = accentize_with_accents(text, accents)
+        tf.reset_default_graph()
+        with tf.Session() as sess:
+            saver = tf.train.import_meta_graph(path + '.meta')
+            saver.restore(sess, path)
 
-#     print('feedforward: ' + accentized_text)
+            accents[vowel] = sess.run(
+                'output:0', feed_dict={
+                    'n_input:0': windows[vowel]
+                })
+
+    accentized_text = accentize_with_accents(text, accents)
+
+    return accentized_text
 
 
 def accentize_with_lstm_baseline(text, units, window_size):

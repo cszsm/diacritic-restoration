@@ -33,8 +33,8 @@ def process_for_accentize(window_size, words):
     vectorizer.fit(_generate_windows(window_size))
 
     windows = {}
-
     for vowel in vowel_table.keys():
+
         preprocessor = _Preprocessor(-1, window_size, vowel)
         windows[vowel], _ = preprocessor.process(words)
 

@@ -93,3 +93,8 @@ ENV/
 /models
 /res/prepared/*
 !*.py
+
+checkpoint
+session.index
+session.meta
+session.data-00000-of-00001
