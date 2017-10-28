@@ -8,6 +8,7 @@ from src.preprocess.lstm_sequence_tagging_with_accents import process_for_train 
 from src.preprocess.lstm_sequence_tagging import process as process_for_lstm_sequence_tagging
 
 from src.preprocess.common import create_resource_path
+from src.preprocess.feedforward import process_for_train as feedforward
 
 import numpy as np
 
@@ -19,6 +20,21 @@ VOWEL_TABLE = {
     'u': ['u', 'ú', 'ü', 'ű']
 }
 RESOURCE_DIRECTORY = 'res'
+
+
+def process_for_feedforward(count, window_size):
+    for vowel in VOWEL_TABLE.keys():
+        words = CorpusReader.read_words(vowel, count)
+
+        windows, accents = feedforward(count, window_size, vowel, words)
+
+        parent_path = create_resource_path('feedforward', window_size)
+        path = os.path.join(parent_path, vowel)
+
+        np.savez(path, x=windows, y=accents)
+
+        file = open(os.path.join(parent_path, '_count.txt'), 'w')
+        file.write(str(count))
 
 
 class PreprocessorFramework:
