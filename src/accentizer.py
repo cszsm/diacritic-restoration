@@ -7,9 +7,11 @@ import numpy as np
 
 # import src.preprocess.feedforward_preprocessor as feedforward_preprocessor
 import src.preprocess.lstm_baseline_preprocessor as lstm_baseline_preprocessor
-from src.preprocess.lstm_sequence_tagging import process_for_train
+from src.preprocess.lstm_sequence_tagging import process
 
 from src.preprocess import common
+
+from src.preprocess.character_encoder import HungarianEncoder
 
 # import argparse
 
@@ -101,31 +103,22 @@ def accentize_with_lstm_sequence_tagging(text):
         for i in range(d):
             text += '_'
 
-    characters, _ = process_for_train([text])
+    characters, _ = process([text])
 
     path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
     model = load_model(path)
-    accents = model.predict(np.array(characters))
+    predictions = model.predict(np.array(characters))
 
     # predictions to print
-    preds_to_print = accents[0][:20]
-    # rounded_preds = [
-    #     list(map(lambda x: round(x, 2), pred)) for pred in preds_to_print
-    # ]
-    # for pred in rounded_preds:
-    #     print(pred)
+    preds_to_print = predictions[0][0]
     rounded_preds = np.around(preds_to_print, 2)
     print(rounded_preds)
-    # print(preds_to_print)
 
-    accentized_sentence = ''
-    accent_tags = ''
+    encoder = HungarianEncoder()
+    accentized = ''
 
-    for i in range(sentence_length):
-        accent_tag = np.array(accents[0][i]).argmax(axis=0)
-        accent_tags += str(accent_tag)
-        accentized_character = common.accentize_by_tag(text[i], accent_tag)
-        accentized_sentence += accentized_character
+    for prediction in predictions[0]:
+        character = encoder.inverse_transform(prediction)
+        accentized += character
 
-    print(accent_tags)
-    return accentized_sentence
+    return accentized

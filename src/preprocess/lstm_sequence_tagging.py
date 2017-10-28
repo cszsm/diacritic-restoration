@@ -2,10 +2,10 @@
 Preprocess data for the sequence tagging lstm network
 '''
 
+import time
+
 from src.preprocess.common import normalize_character, deaccentize
 from src.preprocess.character_encoder import EnglishEncoder, HungarianEncoder
-
-import time
 
 
 def process(sentences):
