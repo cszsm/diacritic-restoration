@@ -9,6 +9,8 @@ import numpy as np
 import src.preprocess.lstm_baseline_preprocessor as lstm_baseline_preprocessor
 from src.preprocess.lstm_sequence_tagging import process
 
+from keras.preprocessing.sequence import pad_sequences
+
 from src.preprocess import common
 
 from src.preprocess.character_encoder import HungarianEncoder
@@ -105,23 +107,47 @@ def accentize_with_accents(text, accents):
 
 def accentize_with_lstm_sequence_tagging(text):
 
-    sentence_length = len(text)
-    if sentence_length <= 600:
+    SEQUENCE_LEN = 100
 
-        d = 600 - sentence_length
-        for i in range(d):
-            text += '_'
+    # sentence_length = len(text)
+    # if sentence_length <= SEQUENCE_LEN:
+
+    # d = SEQUENCE_LEN - sentence_length
+    # for i in range(d):
+    #     text += '#'
 
     characters, _ = process([text])
+
+    characters = pad_sequences(
+        characters, maxlen=SEQUENCE_LEN, padding='post', value=0.)
 
     path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
     model = load_model(path)
     predictions = model.predict(np.array(characters))
 
+    # print(predictions)
     # predictions to print
     preds_to_print = predictions[0][0]
     rounded_preds = np.around(preds_to_print, 2)
-    print(rounded_preds)
+    # print(rounded_preds)
+
+    encoder = HungarianEncoder()
+    accentized = ''
+
+    for prediction in predictions[0]:
+        character = encoder.inverse_transform(prediction)
+        accentized += character
+
+    print(len(accentized))
+    return accentized
+
+
+def _decode_predictions_to_string(predictions):
+
+    # predictions to print
+    # preds_to_print = predictions[0][0]
+    # rounded_preds = np.around(preds_to_print, 2)
+    # print(rounded_preds)
 
     encoder = HungarianEncoder()
     accentized = ''

@@ -61,6 +61,22 @@ def normalize_character(c):
     return '*'
 
 
+#should be unused
+def normalize_character_with_padding(c):
+    '''Reduces the number of different characters to 40'''
+    if c.isspace():
+        return ' '
+    if c.isdigit():
+        return '0'
+    if ispunct(c):
+        return '_'
+    if isalpha(c):
+        return c
+    if c is '#':
+        return '#'
+    return '*'
+
+
 def normalize_list(character_list):
     normalized_list = []
 

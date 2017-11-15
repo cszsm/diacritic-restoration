@@ -5,6 +5,8 @@ from src.train import feedforward_network
 from src.train import lstm_baseline_network
 from src.train.lstm_sequence_tagging import Network as LstmSequenceTaggingNetwork
 
+from keras.preprocessing.sequence import pad_sequences
+
 from src.logger import Logger
 
 import datetime
@@ -215,6 +217,22 @@ class Framework:
             prepared_data = np.load(
                 os.path.join(self.res_path, 'prepared', self.model_name,
                              'prepared.npz'))
+
+            # english_pad_value = EnglishEncoder().transform('#')
+            # hungarian_pad_value = HungarianEncoder().transform('#')
+
+            # padded_data = {}
+            # padded_data['x'] = pad_sequences(
+            #     prepared_data['x'],
+            #     maxlen=600,
+            #     padding='post',
+            #     value=english_pad_value)
+            # padded_data['y'] = pad_sequences(
+            #     prepared_data['y'],
+            #     maxlen=600,
+            #     padding='post',
+            #     value=hungarian_pad_value)
+
             train_x, test_x, train_y, test_y = train_test_split(
                 prepared_data['x'], prepared_data['y'], test_size=0.2)
             prepared['train_x'] = train_x

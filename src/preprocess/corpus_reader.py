@@ -73,11 +73,7 @@ def read_sentences(count):
                 # print(sentence + '\n')
 
                 sentence_length = len(sentence)
-                if sentence_length <= 600:
-
-                    d = 600 - sentence_length
-                    for i in range(d):
-                        sentence += '_'
+                if sentence_length > 0 and sentence_length <= 100:
 
                     sentences.append(sentence)
                     # sentence_counter += 1
