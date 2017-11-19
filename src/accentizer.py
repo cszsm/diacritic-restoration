@@ -106,38 +106,22 @@ def accentize_with_accents(text, accents):
 
 
 def accentize_with_lstm_sequence_tagging(text):
+    '''Accentizes text with the sequence tagging LSTM network'''
 
-    extracted_text, multiple_spaces = _extract_spaces(text)
+    sequence_len = 600
 
-    SEQUENCE_LEN = 100
-
-    # sentence_length = len(text)
-    # if sentence_length <= SEQUENCE_LEN:
-
-    # d = SEQUENCE_LEN - sentence_length
-    # for i in range(d):
-    #     text += '#'
-
-    characters, _ = process([extracted_text])
-
-    characters = pad_sequences(
-        characters, maxlen=SEQUENCE_LEN, padding='post', value=0.)
-
-    # path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
     path = os.path.join(MODEL_PATH, 'bidirectional_lstm_sequence_tagging',
                         'trained.model')
     model = load_model(path)
+    encoder = HungarianEncoder()
+
+    extracted_text, multiple_spaces = _extract_spaces(text)
+    characters, _ = process([extracted_text])
+    characters = pad_sequences(
+        characters, maxlen=sequence_len, padding='post', value=0.)
     predictions = model.predict(np.array(characters))
 
-    # print(predictions)
-    # predictions to print
-    preds_to_print = predictions[0][0]
-    rounded_preds = np.around(preds_to_print, 2)
-    # print(rounded_preds)
-
-    encoder = HungarianEncoder()
     accentized = ''
-
     for prediction in predictions[0]:
         character = encoder.inverse_transform(prediction)
         accentized += character
@@ -149,11 +133,7 @@ def accentize_with_lstm_sequence_tagging(text):
 
 
 def _decode_predictions_to_string(predictions):
-
-    # predictions to print
-    # preds_to_print = predictions[0][0]
-    # rounded_preds = np.around(preds_to_print, 2)
-    # print(rounded_preds)
+    '''Create readable text from predictions'''
 
     encoder = HungarianEncoder()
     accentized = ''
@@ -166,6 +146,7 @@ def _decode_predictions_to_string(predictions):
 
 
 def _extract_spaces(text):
+    '''Removes unnecessary spaces where more than one occur'''
 
     multiple_spaces = []
     extracted_text = ''
@@ -190,9 +171,8 @@ def _extract_spaces(text):
 
 
 def _restore_spaces(text, multiple_spaces):
+    '''Restores spaces in the text'''
 
-    # i = multiple_spaces[0][0]
-    # restored_text = text[:i]
     i = 0
     restored_text = ''
 
@@ -212,8 +192,8 @@ def _denormalize(original_text, accentized_text):
     denormalized = ''
 
     for original, accentized in zip(original_text, accentized_text):
-        if _is_vowel(original):
-            if _is_corresponding(original, accentized):
+        if original.lower() in VOWEL_TABLE.keys():
+            if accentized in VOWEL_TABLE[original.lower()]:
                 if original.isupper():
                     denormalized += accentized.upper()
                 else:
@@ -224,21 +204,3 @@ def _denormalize(original_text, accentized_text):
             denormalized += original
 
     return denormalized
-
-
-def _is_vowel(character):
-
-    vowels = 'aeiou'
-
-    if character.lower() in vowels:
-        return True
-
-    return False
-
-
-def _is_corresponding(deaccentized, accentized):
-
-    if accentized in VOWEL_TABLE[deaccentized.lower()]:
-        return True
-
-    return False
