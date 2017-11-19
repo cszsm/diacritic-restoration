@@ -107,6 +107,8 @@ def accentize_with_accents(text, accents):
 
 def accentize_with_lstm_sequence_tagging(text):
 
+    extracted_text, multiple_spaces = _extract_spaces(text)
+
     SEQUENCE_LEN = 100
 
     # sentence_length = len(text)
@@ -116,12 +118,14 @@ def accentize_with_lstm_sequence_tagging(text):
     # for i in range(d):
     #     text += '#'
 
-    characters, _ = process([text])
+    characters, _ = process([extracted_text])
 
     characters = pad_sequences(
         characters, maxlen=SEQUENCE_LEN, padding='post', value=0.)
 
-    path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
+    # path = os.path.join(MODEL_PATH, 'lstm_sequence_tagging', 'trained.model')
+    path = os.path.join(MODEL_PATH, 'bidirectional_lstm_sequence_tagging',
+                        'trained.model')
     model = load_model(path)
     predictions = model.predict(np.array(characters))
 
@@ -138,8 +142,10 @@ def accentize_with_lstm_sequence_tagging(text):
         character = encoder.inverse_transform(prediction)
         accentized += character
 
-    print(len(accentized))
-    return accentized
+    restored_text = _restore_spaces(accentized, multiple_spaces)
+    denormalized = _denormalize(text, restored_text)
+
+    return denormalized
 
 
 def _decode_predictions_to_string(predictions):
@@ -157,3 +163,82 @@ def _decode_predictions_to_string(predictions):
         accentized += character
 
     return accentized
+
+
+def _extract_spaces(text):
+
+    multiple_spaces = []
+    extracted_text = ''
+
+    count = 0
+
+    for character in text:
+        if character == ' ':
+            count += 1
+        else:
+            if count > 0:
+                if count > 1:
+                    multiple_spaces.append((len(extracted_text), count))
+
+                extracted_text += ' '
+                extracted_text += character
+                count = 0
+            else:
+                extracted_text += character
+
+    return extracted_text, multiple_spaces
+
+
+def _restore_spaces(text, multiple_spaces):
+
+    # i = multiple_spaces[0][0]
+    # restored_text = text[:i]
+    i = 0
+    restored_text = ''
+
+    for index, count in multiple_spaces:
+        restored_text += text[i:index]
+        restored_text += ' ' * count
+        i = index + 1
+
+    restored_text += text[i:]
+
+    return restored_text
+
+
+def _denormalize(original_text, accentized_text):
+    '''Restore capitalization and punctuations in accentized text based on the original text'''
+
+    denormalized = ''
+
+    for original, accentized in zip(original_text, accentized_text):
+        if _is_vowel(original):
+            if _is_corresponding(original, accentized):
+                if original.isupper():
+                    denormalized += accentized.upper()
+                else:
+                    denormalized += accentized
+            else:
+                denormalized += original
+        else:
+            denormalized += original
+
+    return denormalized
+
+
+def _is_vowel(character):
+
+    vowels = 'aeiou'
+
+    if character.lower() in vowels:
+        return True
+
+    return False
+
+
+def _is_corresponding(deaccentized, accentized):
+
+    if accentized in VOWEL_TABLE[deaccentized.lower()]:
+        return True
+
+    return False

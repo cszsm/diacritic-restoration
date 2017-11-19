@@ -88,11 +88,15 @@ class Framework:
                              str(params['units']),
                              str(params['window_size']), vowel + '.model'))
 
-        elif self.model_name == 'lstm_sequence_tagging':
+        elif self.model_name == 'lstm_sequence_tagging' or self.model_name == 'bidirectional_lstm_sequence_tagging':
             logger = Logger(self.model_name)
             # LstmSequenceTaggingNetwork.log_parameters(logger)
 
-            net = LstmSequenceTaggingNetwork(logger)
+            if self.model_name == 'lstm_sequence_tagging':
+                net = LstmSequenceTaggingNetwork(logger, False)
+            else:
+                net = LstmSequenceTaggingNetwork(logger, True)
+
             net.train(
                 self.prepared_data['train_x'], self.prepared_data['test_x'],
                 self.prepared_data['train_y'], self.prepared_data['test_y'])
@@ -117,7 +121,7 @@ class Framework:
 
     def run(self, params_list=None):
         # TODO
-        if (self.model_name == 'lstm_sequence_tagging'):
+        if self.model_name == 'lstm_sequence_tagging' or self.model_name == 'bidirectional_lstm_sequence_tagging':
             self._load_prepared_data(0)
             os.makedirs(self.model_path, exist_ok=True)
 
@@ -213,25 +217,10 @@ class Framework:
                             prepared_data['x'],
                             prepared_data['y'],
                             test_size=0.2)
-        elif self.model_name == 'lstm_sequence_tagging':
+        elif self.model_name == 'lstm_sequence_tagging' or self.model_name == 'bidirectional_lstm_sequence_tagging':
             prepared_data = np.load(
-                os.path.join(self.res_path, 'prepared', self.model_name,
-                             'prepared.npz'))
-
-            # english_pad_value = EnglishEncoder().transform('#')
-            # hungarian_pad_value = HungarianEncoder().transform('#')
-
-            # padded_data = {}
-            # padded_data['x'] = pad_sequences(
-            #     prepared_data['x'],
-            #     maxlen=600,
-            #     padding='post',
-            #     value=english_pad_value)
-            # padded_data['y'] = pad_sequences(
-            #     prepared_data['y'],
-            #     maxlen=600,
-            #     padding='post',
-            #     value=hungarian_pad_value)
+                os.path.join(self.res_path, 'prepared',
+                             'lstm_sequence_tagging', 'prepared.npz'))
 
             train_x, test_x, train_y, test_y = train_test_split(
                 prepared_data['x'], prepared_data['y'], test_size=0.2)
