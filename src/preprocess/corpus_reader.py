@@ -53,7 +53,7 @@ class CorpusReader:
 
 
 def read_sentences(count):
-    with open(os.path.join('res', 'corpus'), encoding="utf8") as corpus:
+    with open(os.path.join('res', 'corpus'), encoding='utf8') as corpus:
 
         # sentence_counter = 0
         sentence = ''
@@ -73,7 +73,7 @@ def read_sentences(count):
                 # print(sentence + '\n')
 
                 sentence_length = len(sentence)
-                if sentence_length > 0 and sentence_length <= 100:
+                if sentence_length > 0 and sentence_length <= 600:
 
                     sentences.append(sentence)
                     # sentence_counter += 1
@@ -122,4 +122,88 @@ def read_sentences(count):
             sentence += word
 
         print('ERROR: Not enough sentences in the corpus')
+        return sentences
+
+
+def read_pfred_sentences():
+    # with open(os.path.join('res', 'pfred.new'), encoding='utf8') as corpus:
+    with open(
+            os.path.join('res', 'pfred.new'), encoding='utf8') as corpus, open(
+                os.path.join('res', 'pfred_sentences'),
+                mode='w',
+                encoding='utf8') as out:
+
+        # sentence_counter = 0
+        sentence = ''
+        sentences = []
+        # sentence_lengths = []
+
+        # true if the current word is in a quote
+        quotation_flag = False
+        # true if there should be space before the current word
+        space_before_flag = False
+        # true if there should be space after the current word
+        space_after_flag = True
+
+        for line in corpus:
+
+            if line == '\n':
+                # print(sentence + '\n')
+
+                sentence_length = len(sentence)
+                if sentence_length > 0 and sentence_length <= 600:
+                    if sentence[:2] == '— ':
+                        sentence = sentence[2:]
+                    # sentences.append(sentence)
+                    out.write(sentence + '\n')
+                    # sentence_counter += 1
+
+                # sentence_lengths.append(len(sentence))
+                sentence = ''
+
+                space_before_flag = False
+
+                # prepared_count = len(sentences)
+                # if sentence_counter >= count:
+                # if prepared_count % 100 is 0:
+                #     print('read: ' + str(prepared_count))
+
+                # if prepared_count >= count:
+                #     return sentences
+
+                continue
+
+            parts = line.split(maxsplit=1)
+            if len(parts) < 2:
+                continue
+
+            word, tag = parts
+
+            # deciding where space should be added
+            if 'OTHER' in tag:
+                if word is '"':
+                    if quotation_flag:
+                        quotation_flag = False
+                        space_before_flag = False
+                    else:
+                        quotation_flag = True
+                        space_after_flag = False
+                elif word in ['.', ',', '!', '?', ')', ';', ':', '…']:
+                    space_before_flag = False
+                elif word is '-':
+                    space_before_flag = False
+                    space_after_flag = False
+
+            # adding space before the current word
+            if space_before_flag:
+                sentence += ' '
+                space_before_flag = space_after_flag
+                space_after_flag = True
+            else:
+                space_before_flag = True
+
+            sentence += word
+
+        # print('ERROR: Not enough sentences in the corpus')
+        print(len(sentences))
         return sentences

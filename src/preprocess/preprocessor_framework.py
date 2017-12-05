@@ -1,6 +1,6 @@
 import os.path
 
-from src.preprocess.corpus_reader import CorpusReader, read_sentences
+from src.preprocess.corpus_reader import CorpusReader, read_sentences, read_pfred_sentences
 
 from src.preprocess.lstm_baseline_preprocessor import LstmBaselinePreprocessor
 from src.preprocess.feedforward_preprocessor import FeedforwardPreprocessor
@@ -47,6 +47,7 @@ class PreprocessorFramework:
             parent_path = create_resource_path(self.preprocessor)
 
             sentences = read_sentences(count)
+            # sentences = read_pfred_sentences()
 
             # TODO rename
             characters, tags = process_for_lstm_sequence_tagging(sentences)

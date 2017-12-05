@@ -138,7 +138,7 @@ def _decode_predictions_to_string(predictions):
     encoder = HungarianEncoder()
     accentized = ''
 
-    for prediction in predictions[0]:
+    for prediction in predictions:
         character = encoder.inverse_transform(prediction)
         accentized += character
 

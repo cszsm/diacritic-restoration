@@ -14,14 +14,23 @@ class _Encoder:
         labels = self.label_encoder.transform(alphabet)
         self.onehot_encoder.fit(labels.reshape(-1, 1))
 
+    def transform_label(self, character):
+        '''Transforms a character to a label'''
+
+        label = self.label_encoder.transform([character])[0]
+
+        return label
+
+    # TODO rename to transform onehot
     def transform(self, character):
         '''Transforms a character to onehot'''
 
-        label = self.label_encoder.transform([character])[0]
+        label = self.transform_label(character)
         onehot = self.onehot_encoder.transform(label)[0]
 
         return onehot
 
+    # TODO rename
     def inverse_transform(self, onehot):
         '''Transforms onehot back to original character'''
 

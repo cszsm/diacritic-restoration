@@ -13,6 +13,8 @@ import datetime
 import os.path
 # import argparse
 
+import sys
+
 LATIN_VOWELS = ['a', 'e', 'i', 'o', 'u']
 
 # LATIN_VOWELS = ['u']
@@ -97,11 +99,9 @@ class Framework:
             else:
                 net = LstmSequenceTaggingNetwork(logger, True)
 
-            net.train(
-                self.prepared_data['train_x'], self.prepared_data['test_x'],
-                self.prepared_data['train_y'], self.prepared_data['test_y'])
+            net.train(self.prepared_data['x'][:20000],
+                      self.prepared_data['y'][:20000])
 
-            # os.makedirs(self.model_path, exist_ok=True)
             net.get_model().save(
                 os.path.join(self.model_path, 'trained.model'))
 
@@ -222,14 +222,8 @@ class Framework:
                 os.path.join(self.res_path, 'prepared',
                              'lstm_sequence_tagging', 'prepared.npz'))
 
-            train_x, test_x, train_y, test_y = train_test_split(
-                prepared_data['x'], prepared_data['y'], test_size=0.2)
-            prepared['train_x'] = train_x
-            prepared['test_x'] = test_x
-            prepared['train_y'] = train_y
-            prepared['test_y'] = test_y
-
-        self.prepared_data = prepared
+        # TODO
+        self.prepared_data = prepared_data
         return prepared
 
     def save_model(self, model, vowel, id):
