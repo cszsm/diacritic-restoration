@@ -122,10 +122,12 @@ def accentize_with_lstm_sequence_tagging(text):
     predictions = model.predict(np.array(characters))
 
     accentized = ''
+    print(predictions[0][0])
     for prediction in predictions[0]:
         character = encoder.inverse_transform(prediction)
         accentized += character
 
+    print(accentized)
     restored_text = _restore_spaces(accentized, multiple_spaces)
     denormalized = _denormalize(text, restored_text)
 

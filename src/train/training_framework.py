@@ -99,25 +99,15 @@ class Framework:
             else:
                 net = LstmSequenceTaggingNetwork(logger, True)
 
-            net.train(self.prepared_data['x'][:20000],
-                      self.prepared_data['y'][:20000])
+            # net.train(self.prepared_data['x'][:20000],
+            #           self.prepared_data['y'][:20000])
+
+            net.train()
 
             net.get_model().save(
                 os.path.join(self.model_path, 'trained.model'))
 
         # self.logger.log('\n\n')
-
-    # def run(self, count):
-    #     """Runs networks with random parameters, each with all vowels."""
-    #     self.load_prepared_data()
-
-    #     for i in range(count):
-    #         params = self.network.Network.get_random_parameters()
-    #         self.logger.log('\nid: session_' + str(i))
-    #         self.network.Network.log_parameters(self.logger, params)
-    #         os.makedirs(os.path.join(self.model_path, self.filename + '_' + str(i)))
-    #         for vowel in LATIN_VOWELS:
-    #             self.run_network(params, vowel, str(i))
 
     def run(self, params_list=None):
         # TODO

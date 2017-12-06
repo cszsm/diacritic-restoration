@@ -32,8 +32,8 @@ def process(sentences):
             current_time = time.perf_counter()
             elapsed_time = current_time - start_time
 
-            print('processed: ' + str(len(characters_by_sentences)) +
-                  '\telapsed time: ' + str(elapsed_time) + 's')
+            # print('processed: ' + str(len(characters_by_sentences)) +
+            #       '\telapsed time: ' + str(elapsed_time) + 's')
 
             start_time = current_time
 
