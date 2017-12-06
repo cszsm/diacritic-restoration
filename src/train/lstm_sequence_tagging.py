@@ -23,7 +23,7 @@ from src.f_score import FScore
 INPUT_DIM = 30
 OUTPUT_DIM = 39
 SEQUENCE_LEN = 600
-EPOCHS = 3
+EPOCHS = 1
 
 
 class Network:
@@ -54,29 +54,30 @@ class Network:
 
     def train(self):
 
-        # train_x, valid_test_x, train_y, valid_test_y = train_test_split(
-        #     data_x, data_y, test_size=0.4)
-        # valid_x, test_x, valid_y, test_y = train_test_split(
-        #     valid_test_x, valid_test_y, test_size=0.5)
+        data_count = 1000
+
+        train_count = 0.7 * data_count
+        valid_count = 0.2 * data_count
+        test_count = 0.1 * data_count
 
         with open(os.path.join('res', 'sentences'), encoding='utf8') as f:
             early_stopping = EarlyStopping(monitor='val_loss', patience=0)
 
             batch_size = 128
             # steps_per_epoch = int(len(train_x) / batch_size)
-            steps_per_epoch = 75
+            steps_per_epoch = 5
 
             self.model.fit_generator(
-                next_batch(f, steps_per_epoch, 'train'),
+                next_batch(f, steps_per_epoch),
                 steps_per_epoch,
                 epochs=EPOCHS,
                 callbacks=[early_stopping],
                 verbose=1,
-                validation_data=next_batch(f, steps_per_epoch, 'valid'),
+                validation_data=next_batch(f, steps_per_epoch),
                 validation_steps=steps_per_epoch)
 
             score = self.model.evaluate_generator(
-                next_batch(f, batch_size, 'test'), steps_per_epoch)
+                next_batch(f, batch_size), steps_per_epoch)
             print(score)
 
             # TODO: remove
@@ -218,45 +219,31 @@ def next_batch_for_fscore(data_x, data_y, batch_size):
         yield padded_x, padded_y
 
 
-def next_batch(f, batch_size, dataset):
+def next_batch(f, batch_size):
 
-    batch_x = np.zeros((batch_size, SEQUENCE_LEN, INPUT_DIM))
-    batch_y = np.zeros((batch_size, SEQUENCE_LEN, OUTPUT_DIM))
+    # batch_x = np.zeros((batch_size, SEQUENCE_LEN, INPUT_DIM))
+    # batch_y = np.zeros((batch_size, SEQUENCE_LEN, OUTPUT_DIM))
 
-    count = {}
-    count['train'] = 0
-    count['valid'] = 0
-    count['test'] = 0
+    sentences = []
 
     while True:
         for i in range(batch_size):
-            count[dataset] += 1
+            sentences.append(f.readline().rstrip('\n'))
 
-            # index = random.randrange(len(data_x))
+        x, y = process(sentences)
 
-            sentence = f.readline().rstrip('\n')
-            # print(str(j) + ' ' + dataset)
-            # print(sentence)
-            x, y = process([sentence])
+        # TODO: hack
+        if len(x) == 0:
+            i -= 1
+            continue
 
-            # TODO: hack
-            if len(x) == 0:
-                i -= 1
-                continue
+        padded_x = pad_sequences(
+            x, maxlen=SEQUENCE_LEN, padding='post', value=0.)
+        padded_y = pad_sequences(
+            y, maxlen=SEQUENCE_LEN, padding='post', value=0.)
 
-            bx = pad_sequences(
-                x, maxlen=SEQUENCE_LEN, padding='post', value=0.)
-            by = pad_sequences(
-                y, maxlen=SEQUENCE_LEN, padding='post', value=0.)
-
-            # print('')
-            # print('________')
-            # print(_decode_predictions_to_string(bx[0]))
-            # print(_decode_predictions_to_string(by[0]))
-            # print('________')
-
-            batch_x[i] = bx[0]
-            batch_y[i] = by[0]
+        # batch_x[i] = padded_x[0]
+        # batch_y[i] = padded_y[0]
 
         # print('')
 
@@ -274,4 +261,4 @@ def next_batch(f, batch_size, dataset):
         # print(_decode_predictions_to_string(batch_x[0]))
         # print(batch_x[0])
         # print(_decode_predictions_to_string(batch_y[0]))
-        yield batch_x, batch_y
+        yield padded_x, padded_y
