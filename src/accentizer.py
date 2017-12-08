@@ -108,7 +108,7 @@ def accentize_with_accents(text, accents):
 def accentize_with_lstm_sequence_tagging(text):
     '''Accentizes text with the sequence tagging LSTM network'''
 
-    sequence_len = 600
+    sequence_len = 300
 
     path = os.path.join(MODEL_PATH, 'bidirectional_lstm_sequence_tagging',
                         'trained.model')
@@ -122,12 +122,13 @@ def accentize_with_lstm_sequence_tagging(text):
     predictions = model.predict(np.array(characters))
 
     accentized = ''
-    print(predictions[0][0])
+    # print(predictions[0][0])
     for prediction in predictions[0]:
         character = encoder.inverse_transform(prediction)
         accentized += character
 
-    print(accentized)
+    print(len(accentized))
+    print('>>>' + accentized + '<<<')
     restored_text = _restore_spaces(accentized, multiple_spaces)
     denormalized = _denormalize(text, restored_text)
 

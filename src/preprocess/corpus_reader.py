@@ -9,6 +9,8 @@ VOWEL_TABLE = {
 }
 RESOURCE_DIRECTORY = 'res'
 
+SEQUENCE_LEN = 300
+
 
 class CorpusReader:
     @staticmethod
@@ -81,7 +83,7 @@ def read_sentences():
                 # print(sentence + '\n')
 
                 sentence_length = len(sentence)
-                if sentence_length > 0 and sentence_length <= 600:
+                if sentence_length > 0 and sentence_length <= SEQUENCE_LEN:
 
                     sentences.append(sentence)
                     # sentence_counter += 1

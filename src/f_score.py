@@ -4,15 +4,21 @@
 class FScore:
     '''Class for calculating F-score'''
 
-    def __init__(self, true_positives=0, false_positives=0, false_negatives=0):
+    def __init__(self,
+                 true_positives=0,
+                 false_positives=0,
+                 false_negatives=0,
+                 true_negatives=0):
         self.tp = true_positives
         self.fp = false_positives
         self.fn = false_negatives
+        self.tn = true_negatives
 
     def __iadd__(self, other):
         self.tp += other.tp
         self.fp += other.fp
         self.fn += other.fn
+        self.tn += other.tn
 
         return self
 
@@ -49,13 +55,14 @@ class FScore:
         true_positives = 'true positives: ' + str(self.tp) + '\n'
         false_positives = 'false positives: ' + str(self.fp) + '\n'
         false_negatives = 'false negatives: ' + str(self.fn) + '\n'
+        true_negatives = 'true negatives: ' + str(self.tn) + '\n'
 
         precision = 'precision: ' + str(self._precision()) + '\n'
         recall = 'recall: ' + str(self._recall()) + '\n'
 
         f_score = 'f-score: ' + str(self.calculate_fscore())
 
-        string = true_positives + false_positives + false_negatives + '\n'
+        string = true_positives + false_positives + false_negatives + true_negatives + '\n'
         string += precision + recall + '\n'
         string += f_score
 

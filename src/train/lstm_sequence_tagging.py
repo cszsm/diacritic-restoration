@@ -22,8 +22,14 @@ from src.f_score import FScore
 
 INPUT_DIM = 30
 OUTPUT_DIM = 39
-SEQUENCE_LEN = 600
-EPOCHS = 1
+SEQUENCE_LEN = 300
+EPOCHS = 50
+UNITS = 128
+
+read_data = {}
+read_data['train'] = 0
+read_data['valid'] = 0
+read_data['test'] = 0
 
 
 class Network:
@@ -35,13 +41,13 @@ class Network:
         self.model.add(
             Masking(mask_value=0., input_shape=(SEQUENCE_LEN, INPUT_DIM)))
         if bidirectional:
-            self.model.add(Bidirectional(LSTM(100, return_sequences=True)))
-            self.model.add(Bidirectional(LSTM(100, return_sequences=True)))
-            self.model.add(Bidirectional(LSTM(100, return_sequences=True)))
+            self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
+            self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
+            self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
         else:
-            self.model.add(LSTM(100, return_sequences=True))
-            self.model.add(LSTM(100, return_sequences=True))
-            self.model.add(LSTM(100, return_sequences=True))
+            self.model.add(LSTM(UNITS, return_sequences=True))
+            self.model.add(LSTM(UNITS, return_sequences=True))
+            self.model.add(LSTM(UNITS, return_sequences=True))
         self.model.add(TimeDistributed(Dense(OUTPUT_DIM)))
         self.model.add(Activation('softmax'))
 
@@ -54,49 +60,80 @@ class Network:
 
     def train(self):
 
-        data_count = 1000
+        data_count = 200000
 
-        train_count = 0.7 * data_count
-        valid_count = 0.2 * data_count
-        test_count = 0.1 * data_count
+        train_count = int(0.7 * data_count)
+        valid_count = int(0.2 * data_count)
+        test_count = int(0.1 * data_count)
+        print('counts')
+        print(train_count)
+        print(valid_count)
+        print(test_count)
 
+        sentences = []
         with open(os.path.join('res', 'sentences'), encoding='utf8') as f:
-            early_stopping = EarlyStopping(monitor='val_loss', patience=0)
+            sentences = f.read().splitlines()
 
-            batch_size = 128
-            # steps_per_epoch = int(len(train_x) / batch_size)
-            steps_per_epoch = 5
+        # TODO: hack
+        sentences = [sentence for sentence in sentences if len(sentence) > 0]
 
-            self.model.fit_generator(
-                next_batch(f, steps_per_epoch),
-                steps_per_epoch,
-                epochs=EPOCHS,
-                callbacks=[early_stopping],
-                verbose=1,
-                validation_data=next_batch(f, steps_per_epoch),
-                validation_steps=steps_per_epoch)
+        train_sentences = sentences[:train_count]
+        valid_sentences = sentences[train_count:train_count + valid_count]
+        test_sentences = sentences[train_count + valid_count:
+                                   train_count + valid_count + test_count]
+        print('sentence lengths')
+        print(len(train_sentences))
+        print(len(valid_sentences))
+        print(len(test_sentences))
 
-            score = self.model.evaluate_generator(
-                next_batch(f, batch_size), steps_per_epoch)
-            print(score)
+        early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
-            # TODO: remove
-            texts = ['arvizturo', 'tukorfurogep']
-            characters, _ = process(texts)
-            padded = pad_sequences(
-                characters, maxlen=SEQUENCE_LEN, padding='post', value=0.)
-            predictions = self.model.predict(np.array(padded))
-            example = _decode_predictions_to_string(predictions[0])
-            print(example)
-            print(len(example))
+        batch_size = 32
+        # steps_per_epoch = int(len(train_x) / batch_size)
+        # steps_per_epoch = 5
+        print('steps')
+        steps_per_epoch_train = int(train_count / batch_size / EPOCHS)
+        print(steps_per_epoch_train)
+        steps_per_epoch_valid = int(valid_count / batch_size / EPOCHS)
+        print(steps_per_epoch_valid)
+        steps_per_epoch_test = int(test_count / batch_size / EPOCHS)
+        print(steps_per_epoch_test)
 
-            test_sentences = []
-            for i in range(200):
-                test_sentences.append(f.readline().rstrip('\n'))
+        print('data needed')
+        print(steps_per_epoch_train * batch_size * EPOCHS)
+        print(steps_per_epoch_valid * batch_size * EPOCHS)
+        print(steps_per_epoch_test * batch_size * EPOCHS)
 
-            test_x, test_y = process(test_sentences)
+        self.model.fit_generator(
+            next_batch(train_sentences, batch_size, 'train'),
+            steps_per_epoch_train,
+            epochs=EPOCHS,
+            callbacks=[early_stopping],
+            verbose=1,
+            validation_data=next_batch(valid_sentences, batch_size, 'valid'),
+            validation_steps=steps_per_epoch_valid)
 
-            _calculate_fscores(self.model, test_x, test_y)
+        score = self.model.evaluate_generator(
+            next_batch(test_sentences, batch_size, 'test'),
+            steps_per_epoch_test)
+        print(score)
+
+        print('train ' + str(read_data['train']))
+        print('valid ' + str(read_data['valid']))
+        print('test ' + str(read_data['test']))
+
+        # TODO: remove
+        texts = ['arvizturo', 'tukorfurogep']
+        characters, _ = process(texts)
+        padded = pad_sequences(
+            characters, maxlen=SEQUENCE_LEN, padding='post', value=0.)
+        predictions = self.model.predict(np.array(padded))
+        example = _decode_predictions_to_string(predictions[0])
+        print(example)
+        print(len(example))
+
+        test_x, test_y = process(test_sentences)
+        _calculate_fscores(self.model, test_x, test_y)
 
     def get_model(self):
         return self.model
@@ -176,6 +213,7 @@ def _calculate_fscore(character, predictions, actuals):
     true_positives = 0
     false_positives = 0
     false_negatives = 0
+    true_negatives = 0
 
     # print(character)
 
@@ -195,8 +233,11 @@ def _calculate_fscore(character, predictions, actuals):
                 false_negatives += 1
         elif prediction == character and prediction != actual:
             false_positives += 1
+        else:
+            true_negatives += 1
 
-    return FScore(true_positives, false_positives, false_negatives)
+    return FScore(true_positives, false_positives, false_negatives,
+                  true_negatives)
     # self.logger.log('fscore: ' + str(fscore))
 
 
@@ -219,23 +260,28 @@ def next_batch_for_fscore(data_x, data_y, batch_size):
         yield padded_x, padded_y
 
 
-def next_batch(f, batch_size):
+def next_batch(sentences, batch_size, name):
 
-    # batch_x = np.zeros((batch_size, SEQUENCE_LEN, INPUT_DIM))
-    # batch_y = np.zeros((batch_size, SEQUENCE_LEN, OUTPUT_DIM))
+    batch_x = np.zeros((batch_size, SEQUENCE_LEN, INPUT_DIM))
+    batch_y = np.zeros((batch_size, SEQUENCE_LEN, OUTPUT_DIM))
 
-    sentences = []
-
+    count = 0
     while True:
+        batch = []
+
         for i in range(batch_size):
-            sentences.append(f.readline().rstrip('\n'))
+            index = random.randrange(len(sentences))
+            batch.append(sentences[index])
 
-        x, y = process(sentences)
+        # batch = sentences[count:count + batch_size]
+        count += batch_size
 
-        # TODO: hack
-        if len(x) == 0:
-            i -= 1
-            continue
+        read_data[name] += batch_size
+        # print('')
+        # print('train ' + str(read_data['train']))
+        # print('valid ' + str(read_data['valid']))
+        # print('test ' + str(read_data['test']))
+        x, y = process(batch)
 
         padded_x = pad_sequences(
             x, maxlen=SEQUENCE_LEN, padding='post', value=0.)
