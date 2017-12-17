@@ -90,7 +90,7 @@ ENV/
 
 /.vscode
 /logs
-/res/prepared/*
+/res/*
 !*.py
 
 checkpoint
