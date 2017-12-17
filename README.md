@@ -2,6 +2,7 @@
 
 Accentize Hungarian text:
 ```
-echo ekezetesites | python .\accentize.py
+$ echo ekezetesites | python .\accentize.py
+ékezetesítés
 ```
 This uses a model with three bidirectional LSTM layers stacked, each layer with 128 LSTM units trained on the Hungarian Webcorpus (http://mokk.bme.hu/resources/webcorpus/)
