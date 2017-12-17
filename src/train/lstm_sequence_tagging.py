@@ -42,8 +42,8 @@ class Network:
             Masking(mask_value=0., input_shape=(SEQUENCE_LEN, INPUT_DIM)))
         if bidirectional:
             self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
-            self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
-            self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
+            # self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
+            # self.model.add(Bidirectional(LSTM(UNITS, return_sequences=True)))
         else:
             self.model.add(LSTM(UNITS, return_sequences=True))
             self.model.add(LSTM(UNITS, return_sequences=True))

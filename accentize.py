@@ -1,14 +1,11 @@
-import argparse
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 from src import accentizer
 
-parser = argparse.ArgumentParser()
-# parser.add_argument('network_type', help='can be \'feedforward\' or \'lstm_baseline\'')
-# parser.add_argument('--model_id')
-parser.add_argument('units', type=int)
-parser.add_argument('window_size', type=int)
-parser.add_argument('text')
+# tf.logging.set_verbosity(tf.logging.ERROR)
 
-args = parser.parse_args()
+text = input()
+accentized = accentizer.accentize_with_lstm_sequence_tagging(text)
 
-accentizer.accentize(args.text, 'lstm_baseline', args.units, args.window_size)
+print(accentized)
